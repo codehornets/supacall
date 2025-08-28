@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ConversationModality {
+  WEBSITE
+  PHONE
+}
+
+model User {
+  id               String               @id @default(uuid())
+  name             String
+  email            String               @unique
+  password         String
+  verificationCode String?
+  isVerified       Boolean              @default(false)
+  isActive         Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  organizations    OrganizationMember[]
+  refreshTokens    RefreshToken[]
+}
+
+model Organization {
+  id            String               @id @default(uuid())
+  name          String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  members       OrganizationMember[]
+  agents        Agent[]
+  contacts      Contact[]
+  conversations Conversation[]
+}
+
+model OrganizationMember {
+  userId         String
+  organizationId String
+  role           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  users          User         @relation(fields: [userId], references: [id])
+
+  @@id([userId, organizationId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Agent {
+  id             String       @id @default(uuid())
+  name           String
+  description    String
+  allowWebsite   Boolean      @default(true)
+  allowPhone     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+model Contact {
+  id             String         @id @default(uuid())
+  name           String?
+  company        String?
+  email          String?
+  ipAddress      String?
+  phone          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  conversations  Conversation[]
+}
+
+model Conversation {
+  id             String               @id @default(uuid())
+  contactId      String
+  contact        Contact              @relation(fields: [contactId], references: [id])
+  modality       ConversationModality
+  messages       Json                 @default("[]")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
