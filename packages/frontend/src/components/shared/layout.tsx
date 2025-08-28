@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { PiChartDonutFill, PiGearFill, PiSpinner } from "react-icons/pi"
+import { PiBooksFill, PiChartDonutFill, PiChatsTeardropFill, PiGearFill, PiSpinner, PiToolboxFill, PiUsersFill } from "react-icons/pi"
 import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
 import { useAgent } from "@/hooks/use-agent"
@@ -13,6 +13,26 @@ const routes = [
         name: "Dashboard",
         icon: PiChartDonutFill,
         path: "/console/dashboard"
+    },
+    {
+        name: "Conversations",
+        icon: PiChatsTeardropFill,
+        path: "/console/conversations"
+    },
+    {
+        name: "Contacts",
+        icon: PiUsersFill,
+        path: "/console/contacts"
+    },
+    {
+        name: "Knowledge",
+        icon: PiBooksFill,
+        path: "/console/knowledge"
+    },
+    {
+        name: "Tools",
+        icon: PiToolboxFill,
+        path: "/console/tools"
     },
     {
         name: "Settings",
@@ -47,9 +67,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     {routes.map((route) => (
-                        <button 
+                        <button
                             key={route.path}
-                            onClick={() => router.push(route.path)} 
+                            onClick={() => router.push(route.path)}
                             className={`p-2 w-full active:scale-95 flex flex-start items-center rounded-sm gap-2 hover:bg-zinc-200 transition-all text-[15px] ${pathname === route.path && "bg-zinc-200"}`}
                         >
                             <route.icon className="text-xl text-gray-600" />

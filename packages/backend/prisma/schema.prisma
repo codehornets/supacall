@@ -62,21 +62,46 @@ model RefreshToken {
 }
 
 model Agent {
-  id             String       @id @default(uuid())
+  id             String           @id @default(uuid())
   name           String
   description    String
-  allowWebsite   Boolean      @default(true)
-  allowPhone     Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  allowWebsite   Boolean          @default(true)
+  allowPhone     Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  tools          AgentTools?
+  knowledge      AgentKnowledge[]
+  contacts       Contact[]
+  conversations  Conversation[]
 
   @@index([organizationId])
 }
 
+model AgentTools {
+  cal       Json?
+  mcp       Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agentId   String   @id @unique
+  agent     Agent    @relation(fields: [agentId], references: [id])
+}
+
+model AgentKnowledge {
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  file      String
+  data      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Contact {
   id             String         @id @default(uuid())
+  agentId        String
+  agent          Agent          @relation(fields: [agentId], references: [id])
   name           String?
   company        String?
   email          String?
@@ -90,15 +115,16 @@ model Contact {
 }
 
 model Conversation {
-  id             String               @id @default(uuid())
-  contactId      String
-  contact        Contact              @relation(fields: [contactId], references: [id])
-  modality       ConversationModality
-  messages       Json                 @default("[]")
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  organizationId String
-  organization   Organization         @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId])
+  id              String               @id @default(uuid())
+  agentId         String
+  agent           Agent                @relation(fields: [agentId], references: [id])
+  contactId       String
+  contact         Contact              @relation(fields: [contactId], references: [id])
+  modality        ConversationModality
+  messages        Json                 @default("[]")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  humanTakeoverAt DateTime?
+  organizationId  String
+  organization    Organization         @relation(fields: [organizationId], references: [id])
 }
