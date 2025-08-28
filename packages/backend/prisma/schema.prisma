@@ -12,6 +12,13 @@ enum ConversationModality {
   PHONE
 }
 
+enum IndexStatus {
+  PENDING
+  INDEXING
+  INDEXED
+  FAILED
+}
+
 model User {
   id               String               @id @default(uuid())
   name             String
@@ -89,13 +96,14 @@ model AgentTools {
 }
 
 model AgentKnowledge {
-  id        String   @id @default(uuid())
-  agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id])
-  file      String
-  data      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String      @id @default(uuid())
+  agentId     String
+  agent       Agent       @relation(fields: [agentId], references: [id])
+  file        String
+  data        String
+  indexStatus IndexStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }
 
 model Contact {
