@@ -9,7 +9,7 @@ export default function ConsolePage() {
     const router = useRouter();
 
     useEffect(() => {
-        router.push("/console/settings");
+        router.push("/console/dashboard");
     }, [])
 
     return <div className="flex items-center justify-center h-screen"><PiSpinner className="text-lg animate-spin" /></div>

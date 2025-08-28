@@ -18,13 +18,13 @@ const updateOrgSchema = {
     name: z.string().min(2, "Organization name must be at least 2 characters"),
   }),
   params: z.object({
-    id: z.string().uuid("Invalid organization ID"),
+    id: z.uuid("Invalid organization ID"),
   }),
 };
 
 const getOrgSchema = {
   params: z.object({
-    id: z.string().uuid("Invalid organization ID"),
+    id: z.uuid("Invalid organization ID"),
   }),
 };
 
@@ -34,7 +34,7 @@ router.use(authMiddleware());
 // Get user's organizations
 router.get('/', async (req, res, next) => {
   try {
-    const organizations = await OrganizationService.getUserOrganizations(res.locals.user.id);
+    const organizations = await OrganizationService.getUserOrganizations(res.locals.user);
     res.json(organizations);
   } catch (error) {
     next(error);
@@ -49,7 +49,7 @@ router.post(
     try {
       const organization = await OrganizationService.createOrganization(
         req.body.name,
-        res.locals.user.id
+        res.locals.user
       );
       res.status(201).json(organization);
     } catch (error) {
@@ -66,7 +66,7 @@ router.get(
     try {
       const organization = await OrganizationService.getOrganization(
         req.params.id,
-        res.locals.user.id
+        res.locals.user
       );
       res.json(organization);
     } catch (error) {
@@ -83,7 +83,7 @@ router.put(
     try {
       const organization = await OrganizationService.updateOrganization(
         req.params.id,
-        res.locals.user.id,
+        res.locals.user,
         req.body.name
       );
       res.json(organization);
@@ -101,7 +101,7 @@ router.delete(
     try {
       await OrganizationService.deleteOrganization(
         req.params.id,
-        res.locals.user.id
+        res.locals.user
       );
       res.status(204).send();
     } catch (error) {

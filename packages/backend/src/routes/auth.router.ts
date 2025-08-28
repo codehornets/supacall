@@ -115,7 +115,7 @@ router.post(
   authMiddleware({ requiresEmailVerification: true, requiresOrg: false }),
   async (req, res, next) => {
     try {
-      await AuthService.logoutAll(res.locals.user.id);
+      await AuthService.logoutAll(res.locals.user);
       res.json({ message: 'Logged out from all devices' });
     } catch (error) {
       next(error);
@@ -128,7 +128,7 @@ router.get(
   authMiddleware({ requiresEmailVerification: false, requiresOrg: false }),
   async (req, res, next) => {
     try {
-      const result = await AuthService.getCurrentUser(res.locals.user.id);
+      const result = await AuthService.getCurrentUser(res.locals.user);
       res.json(result);
     } catch (error) {
       next(error);

@@ -1,11 +1,19 @@
 "use client"
 
 import React from "react"
-import { PiGearFill } from "react-icons/pi"
-import { useRouter } from "next/navigation"
+import { PiChartDonutFill, PiGearFill, PiSpinner } from "react-icons/pi"
+import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
+import { useAgent } from "@/hooks/use-agent"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import NewAgent from "./new-agent"
 
 const routes = [
+    {
+        name: "Dashboard",
+        icon: PiChartDonutFill,
+        path: "/console/dashboard"
+    },
     {
         name: "Settings",
         icon: PiGearFill,
@@ -13,20 +21,51 @@ const routes = [
     }
 ]
 
-
-export default function AppLayout({ page, children }: { page: string, children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter()
+    const { agents, loading, selectedAgentId, setSelectedAgentId } = useAgent()
+    const pathname = usePathname()
 
     return (
         <div className="w-screen h-screen flex">
-            <div className="h-screen flex flex-col items-center w-[60px] border-r-[1px] border-zinc-200 flex-shrink-0">
-                <Image src="/logo.svg" className="mb-2" alt="Manyreply" width={25} height={25} />
-                {routes.map((route) => (
-                    <button onClick={() => router.push(route.path)} className={`p-2 active:scale-95 flex flex-start items-center rounded-sm gap-2 hover:bg-zinc-200 transition-all text-[15px] ${page === route.name.toLowerCase() && "bg-zinc-200"}`}><route.icon className="text-xl text-gray-600" /></button>
-                ))}
+            <div className="h-screen flex flex-col gap-3 pt-5 items-start px-3 w-[250px] border-r-[1px] border-zinc-200 flex-shrink-0">
+                <Image src="/logo-full.svg" className="mb-2" alt="Manyreply" width={150} height={75} />
+                <div className="w-full flex gap-2">
+                    <Select value={selectedAgentId || ""} onValueChange={setSelectedAgentId}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select an agent" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {agents.map((agent) => (
+                                <SelectItem key={agent.id} value={agent.id}>
+                                    {agent.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <NewAgent />
+                </div>
+                <div className="flex flex-col gap-2 w-full">
+                    {routes.map((route) => (
+                        <button 
+                            key={route.path}
+                            onClick={() => router.push(route.path)} 
+                            className={`p-2 w-full active:scale-95 flex flex-start items-center rounded-sm gap-2 hover:bg-zinc-200 transition-all text-[15px] ${pathname === route.path && "bg-zinc-200"}`}
+                        >
+                            <route.icon className="text-xl text-gray-600" />
+                            {route.name}
+                        </button>
+                    ))}
+                </div>
             </div>
-            <div style={{ width: "calc(100vw - 60px)" }} className="h-full overflow-x-hidden overflow-y-auto">
-                {children}
+            {/* Main Content */}
+            <div style={{ width: "calc(100vw - 250px)" }} className="h-full overflow-x-hidden overflow-y-auto">
+                {loading && <div className="flex justify-center items-center h-full">
+                    <PiSpinner className="animate-spin text-lg" />
+                </div>}
+                {selectedAgentId && !loading ? children : <div className="flex justify-center items-center h-full">
+                    <p className="text-sm text-gray-500">No agent selected</p>
+                </div>}
             </div>
         </div>
     )

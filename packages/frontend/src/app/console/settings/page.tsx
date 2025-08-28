@@ -63,74 +63,73 @@ export default function SettingsPage() {
     };
 
     return (
-        <AppLayout page="settings">
-            <div className="container mx-auto py-10 space-y-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Organization Settings</CardTitle>
-                        <CardDescription>
-                            Manage your organizations and switch between them
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Current Organization</label>
-                            <Select
-                                value={currentOrg?.id}
-                                onValueChange={handleOrgChange}
+        <div className="space-y-3 p-5">
+            
+            <Card className="rounded-sm shadow-sm">
+                <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                    <CardDescription>
+                        Manage your account and session
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div>
+                            <p className="text-sm font-medium">Email</p>
+                            <p className="text-sm text-muted-foreground">{user?.email}</p>
+                        </div>
+                        <Button variant="destructive" onClick={handleLogout}>
+                            Logout
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="rounded-sm shadow-sm">
+                <CardHeader>
+                    <CardTitle>Organization Settings</CardTitle>
+                    <CardDescription>
+                        Manage your organizations and switch between them
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Current Organization</label>
+                        <Select
+                            value={currentOrg?.id}
+                            onValueChange={handleOrgChange}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select organization" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {organizations.map((org: Organization) => (
+                                    <SelectItem key={org.id} value={org.id}>
+                                        {org.name} ({org.role})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium">Create New Organization</label>
+                        <div className="flex space-x-2">
+                            <Input
+                                placeholder="Organization name"
+                                value={newOrgName}
+                                onChange={(e) => setNewOrgName(e.target.value)}
+                            />
+                            <Button
+                                onClick={handleCreateOrg}
+                                disabled={!newOrgName || isCreating}
                             >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select organization" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {organizations.map((org: Organization) => (
-                                        <SelectItem key={org.id} value={org.id}>
-                                            {org.name} ({org.role})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Create New Organization</label>
-                            <div className="flex space-x-2">
-                                <Input
-                                    placeholder="Organization name"
-                                    value={newOrgName}
-                                    onChange={(e) => setNewOrgName(e.target.value)}
-                                />
-                                <Button
-                                    onClick={handleCreateOrg}
-                                    disabled={!newOrgName || isCreating}
-                                >
-                                    {isCreating ? "Creating..." : "Create"}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Account Settings</CardTitle>
-                        <CardDescription>
-                            Manage your account and session
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-sm font-medium">Email</p>
-                                <p className="text-sm text-muted-foreground">{user?.email}</p>
-                            </div>
-                            <Button variant="destructive" onClick={handleLogout}>
-                                Logout
+                                {isCreating ? "Creating..." : "Create"}
                             </Button>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </AppLayout>
+                    </div>
+                </CardContent>
+            </Card>
+
+        </div>
     );
 }

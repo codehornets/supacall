@@ -45,7 +45,7 @@ export const authMiddleware = (options: AuthMiddlewareOptions = { requiresEmailV
       }
 
       // Set user context
-      res.locals.user = user;
+      res.locals.user = user.id;
 
       if(options.requiresOrg && !orgId) {
         return res.status(403).json({ message: 'Organization ID is required' });
@@ -58,7 +58,7 @@ export const authMiddleware = (options: AuthMiddlewareOptions = { requiresEmailV
           return res.status(403).json({ message: 'User not a member of this organization' });
         }
         if (orgMembership) {
-          res.locals.org = orgMembership;
+          res.locals.org = orgMembership.organizationId;
         }
       }
 
