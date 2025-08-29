@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { prisma } from "../lib/db";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
+import { AgentsService } from "../services/agents.service";
 
 const router = Router();
 
@@ -28,14 +28,7 @@ router.use(authMiddleware());
 // Get all agents for the organization
 router.get("/", async (req, res) => {
   try {
-    const agents = await prisma.agent.findMany({
-      where: {
-        organizationId: res.locals.org,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const agents = await AgentsService.getAllAgents(res.locals.org);
     res.json(agents);
   } catch (error) {
     console.error("Error fetching agents:", error);
@@ -48,11 +41,9 @@ router.post("/",
   validateRequest(createAgentSchema),
   async (req, res) => {
     try {
-      const agent = await prisma.agent.create({
-        data: {
-          ...req.body,
-          organizationId: res.locals.org,
-        },
+      const agent = await AgentsService.createAgent({
+        ...req.body,
+        organizationId: res.locals.org,
       });
       res.json(agent);
     } catch (error) {
@@ -73,21 +64,13 @@ router.put("/:id",
       const { id } = req.params;
 
       // Verify agent belongs to organization
-      const existingAgent = await prisma.agent.findFirst({
-        where: {
-          id,
-          organizationId: res.locals.org,
-        },
-      });
+      const existingAgent = await AgentsService.getAgentById(id, res.locals.org);
 
       if (!existingAgent) {
         return res.status(404).json({ error: "Agent not found" });
       }
 
-      const agent = await prisma.agent.update({
-        where: { id },
-        data: req.body,
-      });
+      const agent = await AgentsService.updateAgent(id, req.body);
       res.json(agent);
     } catch (error) {
       console.error("Error updating agent:", error);
@@ -104,20 +87,13 @@ router.delete("/:id",
       const { id } = req.params;
 
       // Verify agent belongs to organization
-      const existingAgent = await prisma.agent.findFirst({
-        where: {
-          id,
-          organizationId: res.locals.org,
-        },
-      });
+      const existingAgent = await AgentsService.getAgentById(id, res.locals.org);
 
       if (!existingAgent) {
         return res.status(404).json({ error: "Agent not found" });
       }
 
-      await prisma.agent.delete({
-        where: { id },
-      });
+      await AgentsService.deleteAgent(id);
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting agent:", error);

@@ -20,7 +20,7 @@ export default function KnowledgeBasePage() {
   const fetchKnowledgeBase = async () => {
     try {
       if (!selectedAgent) return;
-      const response = await api.get(`/knowledge-base/${selectedAgent.id}`);
+      const response = await api.get(`/${selectedAgent}/knowledge-base`);
       setData(response.data);
     } catch (error) {
       toast.error("Failed to fetch documents");
@@ -29,8 +29,9 @@ export default function KnowledgeBasePage() {
 
   const handleDelete = async (id: string) => {
     try {
+      if (!selectedAgent) return; 
       setIsDeleting(id);
-      await api.delete(`/knowledge-base/${id}`);
+      await api.delete(`/${selectedAgent}/knowledge-base/${id}`);
       toast.success("Document deleted successfully");
       fetchKnowledgeBase();
     } catch (error) {
@@ -49,7 +50,7 @@ export default function KnowledgeBasePage() {
     <div>
       <div className="px-5 flex items-center justify-between border-b border-zinc-200 h-[50px]">
         <h1 className="text-lg font-medium">Knowledge Base</h1>
-        {selectedAgent && <UploadDocument agentId={selectedAgent.id} />}
+        {selectedAgent && <UploadDocument agentId={selectedAgent} />}
       </div>
 
       <Table>
@@ -57,8 +58,6 @@ export default function KnowledgeBasePage() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Uploaded By</TableHead>
             <TableHead>Upload Date</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -66,21 +65,19 @@ export default function KnowledgeBasePage() {
         <TableBody>
           {data.map((item: any) => (
             <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell className="font-medium">{item.file.replace(/^\d{4}_\d{6}_\d{6}_/, '')}</TableCell>
               <TableCell>
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.status === "COMPLETED"
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.indexStatus === "COMPLETED"
                     ? "bg-green-100 text-green-800"
-                    : item.status === "FAILED"
+                    : item.indexStatus === "FAILED"
                       ? "bg-red-100 text-red-800"
                       : "bg-yellow-100 text-yellow-800"
                     }`}
                 >
-                  {item.status.toLowerCase()}
+                  {item.indexStatus.toLowerCase()}
                 </span>
               </TableCell>
-              <TableCell>{item.size}</TableCell>
-              <TableCell>{item.uploadedBy.name}</TableCell>
               <TableCell>
                 {formatDistanceToNow(new Date(item.createdAt), {
                   addSuffix: true,

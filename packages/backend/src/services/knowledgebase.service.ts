@@ -4,6 +4,7 @@ import { prisma } from "../lib/db";
 interface CreateDocumentParams {
   name: string;
   agentId: string;
+  organizationId: string;
 }
 
 export class KnowledgeBaseService {
@@ -12,7 +13,7 @@ export class KnowledgeBaseService {
       const document = await prisma.agentKnowledge.create({
         data: {
           file: params.name,
-          data: "",
+          organizationId: params.organizationId,
           agentId: params.agentId,
           indexStatus: "PENDING",
         },
@@ -22,9 +23,7 @@ export class KnowledgeBaseService {
       await indexingQueue.add(
         `index-${document.id}`,
         {
-          documentId: document.id,
-          file: document.file,
-          agentId: params.agentId,
+          documentId: document.id
         },
         {
           attempts: 3,

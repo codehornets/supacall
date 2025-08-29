@@ -29,14 +29,17 @@ model User {
 }
 
 model Organization {
-  id            String               @id @default(uuid())
-  name          String
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  members       OrganizationMember[]
-  agents        Agent[]
-  contacts      Contact[]
-  conversations Conversation[]
+  id                 String                @id @default(uuid())
+  name               String
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  members            OrganizationMember[]
+  agents             Agent[]
+  contacts           Contact[]
+  conversations      Conversation[]
+  knowedgeIndexes    AgentKnowledgeIndex[]
+  agentKnowledgeDocs AgentKnowledge[]
+  twilioConfig       AgentTwilio[]
 }
 
 model OrganizationMember {
@@ -93,24 +96,40 @@ model AgentTools {
 }
 
 model AgentTwilio {
-  agentId     String   @id @unique
-  agent       Agent    @relation(fields: [agentId], references: [id])
-  accountSid  String
-  authToken   String
-  phoneNumber String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  agentId        String       @id @unique
+  agent          Agent        @relation(fields: [agentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  accountSid     String
+  authToken      String
+  phoneNumber    String       @unique
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model AgentKnowledge {
-  id          String      @id @default(uuid())
-  agentId     String
-  agent       Agent       @relation(fields: [agentId], references: [id])
-  file        String
-  data        String
-  indexStatus IndexStatus @default(PENDING)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id             String                @id @default(uuid())
+  agentId        String
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id])
+  agent          Agent                 @relation(fields: [agentId], references: [id])
+  file           String
+  indexStatus    IndexStatus           @default(PENDING)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  indexes        AgentKnowledgeIndex[]
+}
+
+model AgentKnowledgeIndex {
+  id               String         @id @default(uuid())
+  organizationId   String
+  organization     Organization   @relation(fields: [organizationId], references: [id])
+  agentKnowledgeId String
+  agentKnowledge   AgentKnowledge @relation(fields: [agentKnowledgeId], references: [id])
+  referenceImage   String
+  referenceText    String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Contact {

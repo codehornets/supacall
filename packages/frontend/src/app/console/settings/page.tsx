@@ -49,7 +49,7 @@ export default function SettingsPage() {
     const fetchTwilioSettings = async () => {
         if (!selectedAgent) return;
         try {
-            const response = await api.get(`/twilio/${selectedAgent.id}`);
+            const response = await api.get(`/${selectedAgent}/twilio`);
             if(response.data) {
                 setTwilioSettings(response.data);
             }
@@ -188,7 +188,7 @@ export default function SettingsPage() {
 
             {selectedAgent && (
                 <TwilioSettingsDialog
-                    agentId={selectedAgent.id}
+                    agentId={selectedAgent}
                     open={twilioDialogOpen}
                     onOpenChange={setTwilioDialogOpen}
                     initialData={twilioSettings}

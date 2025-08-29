@@ -23,21 +23,19 @@ export interface CreateAgentData {
 
 interface AgentState {
     agents: Agent[];
-    selectedAgentId: string | null;
     loading: boolean;
     error: string | null;
-    selectedAgent: Agent | null;
+    selectedAgent: string | null;
     init: () => Promise<void>;
     createAgent: (data: CreateAgentData) => Promise<Agent>;
     updateAgent: (id: string, data: CreateAgentData) => Promise<Agent>;
     deleteAgent: (id: string) => Promise<void>;
-    setSelectedAgentId: (id: string | null) => void;
+    setSelectedAgent: (id: string | null) => void;
     setState: (state: Partial<AgentState>) => void;
 }
 
 export const useAgent = create<AgentState>((set, get) => ({
     agents: [],
-    selectedAgentId: null,
     loading: true,
     error: null,
     selectedAgent: null,
@@ -50,19 +48,18 @@ export const useAgent = create<AgentState>((set, get) => ({
             const agents = response.data;
             
             // If there's no selected agent and we have agents, select the first one
-            const selectedAgentId = get().selectedAgentId;
+            const selectedAgentId = get().selectedAgent;
             if (!selectedAgentId && agents.length > 0) {
                 set({ 
                     agents,
-                    selectedAgentId: agents[0].id,
-                    selectedAgent: agents[0],
+                    selectedAgent: agents[0].id,
                     loading: false,
                     error: null
                 });
             } else {
                 set({ 
                     agents,
-                    selectedAgent: agents.find(a => a.id === selectedAgentId) || null,
+                    selectedAgent: agents.find(a => a.id === selectedAgentId)?.id || null,
                     loading: false,
                     error: null
                 });
@@ -81,8 +78,7 @@ export const useAgent = create<AgentState>((set, get) => ({
             const response = await api.post<Agent>('/agents', data);
             set(state => ({ 
                 agents: [response.data, ...state.agents],
-                selectedAgentId: response.data.id,
-                selectedAgent: response.data
+                selectedAgent: response.data.id,
             }));
             return response.data;
         } catch (err) {
@@ -95,7 +91,7 @@ export const useAgent = create<AgentState>((set, get) => ({
             const response = await api.put<Agent>(`/agents/${id}`, data);
             set(state => ({
                 agents: state.agents.map(agent => agent.id === id ? response.data : agent),
-                selectedAgent: state.selectedAgentId === id ? response.data : state.selectedAgent
+                selectedAgent: state.selectedAgent === id ? response.data.id : state.selectedAgent
             }));
             return response.data;
         } catch (err) {
@@ -108,14 +104,13 @@ export const useAgent = create<AgentState>((set, get) => ({
             await api.delete(`/agents/${id}`);
             set(state => {
                 const remainingAgents = state.agents.filter(agent => agent.id !== id);
-                const newSelectedId = state.selectedAgentId === id
+                const newSelectedId = state.selectedAgent === id
                     ? (remainingAgents.length > 0 ? remainingAgents[0].id : null)
-                    : state.selectedAgentId;
+                    : state.selectedAgent;
                 
                 return {
                     agents: remainingAgents,
-                    selectedAgentId: newSelectedId,
-                    selectedAgent: remainingAgents.find(a => a.id === newSelectedId) || null
+                    selectedAgent: newSelectedId,
                 };
             });
         } catch (err) {
@@ -123,10 +118,9 @@ export const useAgent = create<AgentState>((set, get) => ({
         }
     },
 
-    setSelectedAgentId: (id: string | null) => {
+    setSelectedAgent: (id: string | null) => {
         set(state => ({
-            selectedAgentId: id,
-            selectedAgent: state.agents.find(a => a.id === id) || null
+            selectedAgent: id,
         }));
     }
 }));

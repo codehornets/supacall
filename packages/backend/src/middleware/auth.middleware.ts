@@ -27,13 +27,9 @@ export const authMiddleware = (options: AuthMiddlewareOptions = { requiresEmailV
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
       const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        include: {
-          organizations: {
-            where: orgId ? { organizationId: orgId } : undefined,
-          },
-        },
+        where: { id: decoded.userId }
       });
 
       if (!user) {
@@ -47,19 +43,24 @@ export const authMiddleware = (options: AuthMiddlewareOptions = { requiresEmailV
       // Set user context
       res.locals.user = user.id;
 
-      if(options.requiresOrg && !orgId) {
+      if (options.requiresOrg && !orgId) {
         return res.status(403).json({ message: 'Organization ID is required' });
       }
 
       // Set org context if org ID is provided
       if (orgId) {
-        const orgMembership = user.organizations[0];
-        if (options.requiresOrg && !orgMembership) {
+        const orgMembership = await prisma.organizationMember.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: orgId
+          }
+        });
+
+        if (!orgMembership) {
           return res.status(403).json({ message: 'User not a member of this organization' });
         }
-        if (orgMembership) {
-          res.locals.org = orgMembership.organizationId;
-        }
+
+        res.locals.org = orgMembership.organizationId;
       }
 
       next();

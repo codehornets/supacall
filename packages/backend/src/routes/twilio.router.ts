@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { prisma } from '../lib/db';
 import { validateRequest } from 'zod-express-middleware';
+import { agentMiddleware } from '../middleware/agent.middleware';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { AgentsService } from '../services/agents.service';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 const twilioSchema = z.object({
   accountSid: z.string(),
@@ -11,16 +13,17 @@ const twilioSchema = z.object({
   phoneNumber: z.string(),
 });
 
+router.use(authMiddleware());
+router.use(agentMiddleware);
+
 // Get Twilio settings for an agent
-router.get('/:agentId', validateRequest({
+router.get('/', validateRequest({
   params: z.object({ agentId: z.string() }),
 }), async (req, res) => {
   try {
     const { agentId } = req.params;
 
-    const twilioSettings = await prisma.agentTwilio.findFirst({
-      where: { agentId },
-    });
+    const twilioSettings = await AgentsService.getTwilioSettings(agentId);
 
     if (!twilioSettings) {
       return res.status(200).json(null);
@@ -34,7 +37,7 @@ router.get('/:agentId', validateRequest({
 });
 
 // Update or create Twilio settings for an agent
-router.post('/:agentId', validateRequest({
+router.post('/', validateRequest({
   params: z.object({ agentId: z.string() }),
   body: twilioSchema,
 }), async (req, res) => {
@@ -42,14 +45,7 @@ router.post('/:agentId', validateRequest({
     const { agentId } = req.params;
     const data = twilioSchema.parse(req.body);
 
-    const twilioSettings = await prisma.agentTwilio.upsert({
-      where: { agentId },
-      update: data,
-      create: {
-        ...data,
-        agentId,
-      },
-    });
+    const twilioSettings = await AgentsService.upsertTwilioSettings(agentId, data);
 
     return res.json(twilioSettings);
   } catch (error) {

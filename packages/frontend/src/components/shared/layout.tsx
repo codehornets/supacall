@@ -43,7 +43,7 @@ const routes = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter()
-    const { agents, loading, selectedAgentId, setSelectedAgentId } = useAgent()
+    const { agents, selectedAgent, setSelectedAgent, loading } = useAgent()
     const pathname = usePathname()
 
     return (
@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="h-screen flex flex-col gap-3 pt-5 items-start px-3 w-[250px] border-r-[1px] border-zinc-200 flex-shrink-0">
                 <Image src="/logo-full.svg" className="mb-2" alt="Manyreply" width={150} height={75} />
                 <div className="w-full flex gap-2">
-                    <Select value={selectedAgentId || ""} onValueChange={setSelectedAgentId}>
+                    <Select value={selectedAgent || ""} onValueChange={setSelectedAgent}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select an agent" />
                         </SelectTrigger>
@@ -83,7 +83,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 {loading && <div className="flex justify-center items-center h-full">
                     <PiSpinner className="animate-spin text-lg" />
                 </div>}
-                {selectedAgentId && !loading ? children : <div className="flex justify-center items-center h-full">
+                {selectedAgent && !loading ? children : <div className="flex justify-center items-center h-full">
                     <p className="text-sm text-gray-500">No agent selected</p>
                 </div>}
             </div>

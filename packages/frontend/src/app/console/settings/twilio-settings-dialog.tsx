@@ -59,7 +59,7 @@ export function TwilioSettingsDialog({
   async function onSubmit(data: TwilioFormValues) {
     try {
       setIsLoading(true);
-      await api.post(`/twilio/${agentId}`, data);
+      await api.post(`/${agentId}/twilio`, data);
       onSuccess?.();
       onOpenChange(false);
     } catch (error) {
