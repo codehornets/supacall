@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useAgent } from "@/hooks/use-agent"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { api } from "@/lib/api"
 
 interface Message {
     id: string
@@ -27,17 +28,16 @@ export default function ConversationsPage() {
 
     useEffect(() => {
         if (!selectedAgent) return
-        
-        fetch(`/api/agents/${selectedAgent}/conversations`)
-            .then(res => res.json())
-            .then(data => {
-                setConversations(data)
-                if (data.length > 0 && !selectedConversation) {
-                    setSelectedConversation(data[0])
-                }
-            })
-            .catch(err => console.error("Error fetching conversations:", err))
+        fetchConversations()
     }, [selectedAgent])
+
+    const fetchConversations = async () => {
+        const response = await api.get(`/agents/${selectedAgent}/conversations`)
+        setConversations(response.data)
+        if (response.data.length > 0 && !selectedConversation) {
+            setSelectedConversation(response.data[0])
+        }
+    }
 
     return (
         <div className="flex h-[calc(100vh-4rem)]">
