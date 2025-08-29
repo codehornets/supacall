@@ -3,8 +3,8 @@ import AppProvider from './provider'
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: 'ManyReply',
-  description: 'ManyReply Application',
+  title: 'Supacall',
+  description: 'Supacall Application',
 }
 
 export default function RootLayout({

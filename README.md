@@ -1,6 +1,6 @@
-# Manyreply
+# Supacall
 
-Manyreply is an opensource AI voice agent platform
+Supacall is an opensource AI voice agent platform
 
 ## Features
 - Drag and drop agent builder
@@ -24,8 +24,8 @@ Manyreply is an opensource AI voice agent platform
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/manyreply.git
-cd manyreply
+git clone https://github.com/yourusername/supacall.git
+cd supacall
 ```
 
 2. Install dependencies:

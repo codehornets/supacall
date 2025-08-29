@@ -1,6 +1,6 @@
-# Contributing to Manyreply
+# Contributing to Supacall
 
-We love your input! We want to make contributing to Manyreply as easy and transparent as possible, whether it's:
+We love your input! We want to make contributing to Supacall as easy and transparent as possible, whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code

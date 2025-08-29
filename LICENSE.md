@@ -1,11 +1,11 @@
-Copyright (c) 2024-present Manyreply.
+Copyright (c) 2024-present Supacall.
 
-Portions of this software – namely all files that reside under the following directories of this repository – are licensed under the license defined in "[ee/LICENSE.md](<https://github.com/harishdeivanayagam/manyreply/tree/main/ee/LICENSE.md>)".
+Portions of this software – namely all files that reside under the following directories of this repository – are licensed under the license defined in "[ee/LICENSE.md](<https://github.com/harishdeivanayagam/supacall/tree/main/ee/LICENSE.md>)".
 
-- [packages/backend/src/ee](<https://github.com/harishdeivanayagam/manyreply/tree/main/packages/backend/src/ee>)
-- [packages/frontend/src/ee](<https://github.com/harishdeivanayagam/manyreply/tree/main/packages/frontend/src/ee>)
+- [packages/backend/src/ee](<https://github.com/harishdeivanayagam/supacall/tree/main/packages/backend/src/ee>)
+- [packages/frontend/src/ee](<https://github.com/harishdeivanayagam/supacall/tree/main/packages/frontend/src/ee>)
 
-All third-party components incorporated into the Manyreply Software are licensed under the original license provided by the owner of the applicable component.
+All third-party components incorporated into the Supacall Software are licensed under the original license provided by the owner of the applicable component.
 
 Content outside of the above mentioned directories or restrictions above is available under the "AGPLv3" license as defined below.
 
