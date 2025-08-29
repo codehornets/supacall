@@ -46,6 +46,9 @@ importers:
       express-ws:
         specifier: ^5.0.2
         version: 5.0.2(express@5.1.0)
+      ioredis:
+        specifier: ^5.7.0
+        version: 5.7.0
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2

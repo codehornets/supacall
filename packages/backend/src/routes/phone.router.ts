@@ -8,6 +8,8 @@ import twilio from "twilio"
 import { prisma } from "../lib/db"
 import { ConversationsService } from "../services/conversations.service"
 import { ExecutorService } from "../services/executor.service"
+import Redis from "ioredis"
+import { REDIS_URL } from "../lib/constants"
 
 const router = Router()
 
@@ -70,6 +72,7 @@ export function usePhoneCallRouter(app: Application) {
         let organizationId: string | null = null;
         let phoneNumber: string | null = null;
         let conversationId: string | null = null;
+        let redis = new Redis(REDIS_URL);
 
         // Silence handling functions
         const startSilenceTimer = () => {
@@ -195,6 +198,31 @@ export function usePhoneCallRouter(app: Application) {
 
             conversationId = conversation.id
 
+            await redis.psubscribe(`__keyspace@0__:conversation:${conversationId}`)
+            redis.on("pmessage", async (pattern, channel, message) => {
+                const conversation = await redis.get(`conversation:${conversationId}`)
+                if(conversation) {
+                    const conversationData = JSON.parse(conversation)
+                    if(conversationData[-1].type === "human_feedback") {
+                        if(openaiWs) {
+                            openaiWs.send(JSON.stringify({
+                                type: "conversation.item.create",
+                                item: {
+                                    type: "message",
+                                    role: "user",
+                                    content: [{
+                                        type: "text",
+                                        text: conversationData[conversationData.length - 1].content
+                                    }]
+                                }
+                            }))
+                            openaiWs.send(JSON.stringify({
+                                type: "response.create"
+                            }))
+                        }
+                    }
+                }
+            })
         }
 
         const initializeOpenAI = () => {
@@ -500,6 +528,9 @@ export function usePhoneCallRouter(app: Application) {
         ws.on('close', () => {
             console.log('Twilio WebSocket connection closed');
             // Clean up timers and OpenAI connection
+            if(redis) {
+                redis.disconnect()
+            }
             clearSilenceTimer();
             if (openaiWs) {
                 openaiWs.close();
