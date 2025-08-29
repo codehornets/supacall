@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:api": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:queue": "ts-node-dev --respawn --transpile-only src/lib/queue.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start:api": "node dist/index.js",
+    "start:queue": "node dist/lib/queue.js",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {

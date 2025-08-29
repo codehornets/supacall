@@ -3,23 +3,16 @@ import { prisma } from "../lib/db";
 
 interface CreateDocumentParams {
   name: string;
-  data: string;
   agentId: string;
-  mimeType: string;
-  size: number;
 }
 
 export class KnowledgeBaseService {
   static async createDocument(params: CreateDocumentParams) {
     try {
-      // Create database record
-      // Generate AWS file name
-      const fileName = `${params.agentId}/${Date.now()}-${params.name}`;
-
       const document = await prisma.agentKnowledge.create({
         data: {
-          file: fileName,
-          data: params.data,
+          file: params.name,
+          data: "",
           agentId: params.agentId,
           indexStatus: "PENDING",
         },
@@ -49,32 +42,13 @@ export class KnowledgeBaseService {
     }
   }
 
-  static async listDocuments(agentId: string, page = 1, limit = 10) {
+  static async listDocuments(agentId: string) {
     try {
-      const [documents, total] = await Promise.all([
-        prisma.agentKnowledge.findMany({
-          where: { agentId },
-          orderBy: { createdAt: "desc" },
-          skip: (page - 1) * limit,
-          take: limit,
-          include: {
-            agent: true,
-          },
-        }),
-        prisma.agentKnowledge.count({
-          where: { agentId },
-        }),
-      ]);
+      const documents = await prisma.agentKnowledge.findMany({
+        where: { agentId },
+      });
 
-      return {
-        documents,
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-        },
-      };
+      return documents;
     } catch (error) {
       console.error("Error listing documents:", error);
       throw error;

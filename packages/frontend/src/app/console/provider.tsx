@@ -3,10 +3,16 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useAgent } from "@/hooks/use-agent";
 
 export default function ConsoleProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const { isAuthenticated, user } = useAuth();
+    const { init: agentInit } = useAgent();
+
+    useEffect(() => {
+        agentInit();
+    }, [])
 
     useEffect(() => {
         // If not authenticated, redirect to login

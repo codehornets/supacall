@@ -13,7 +13,7 @@ import { useAgent } from "@/hooks/use-agent";
 
 export default function KnowledgeBasePage() {
 
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<any[]>([]);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { selectedAgent } = useAgent();
 
@@ -46,9 +46,9 @@ export default function KnowledgeBasePage() {
 
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
+    <div>
+      <div className="px-5 flex items-center justify-between border-b border-zinc-200 h-[50px]">
+        <h1 className="text-lg font-medium">Knowledge Base</h1>
         {selectedAgent && <UploadDocument agentId={selectedAgent.id} />}
       </div>
 

@@ -69,12 +69,12 @@ export function UploadDocument({ agentId }: UploadDocumentProps) {
     try {
       setIsUploading(true);
       
-      // Get presigned URL for upload
-      const filename = `${Date.now()}-${data.file.name}`;
       const presignedUrlResponse = await api.get("/files/presigned-url-for-upload", {
-        params: { filename }
+        params: { filename: data.file.name }
       });
-      const presignedUrl = presignedUrlResponse.data;
+
+      const awsFileName = presignedUrlResponse.data.filename;
+      const presignedUrl = presignedUrlResponse.data.url;
 
       // Upload to S3
       await fetch(presignedUrl, {
@@ -87,10 +87,7 @@ export function UploadDocument({ agentId }: UploadDocumentProps) {
 
       // Create document in knowledge base
       await api.post(`/knowledge-base/${agentId}`, {
-        name: data.file.name,
-        data: filename,
-        mimeType: data.file.type,
-        size: data.file.size
+        name: awsFileName
       });
 
       toast.success("Document uploaded successfully");

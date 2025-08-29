@@ -17,16 +17,24 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 interface Organization {
     id: string;
     name: string;
     role: string;
 }
+
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import AppLayout from "@/components/shared/layout";
+import { TwilioSettingsDialog } from "@/app/console/settings/twilio-settings-dialog";
+import { useAgent } from "@/hooks/use-agent";
+
+interface TwilioSettings {
+    accountSid: string;
+    authToken: string;
+    phoneNumber: string;
+}
 
 
 export default function SettingsPage() {
@@ -34,6 +42,26 @@ export default function SettingsPage() {
     const { user, organizations, currentOrg, setCurrentOrg, logout } = useAuth();
     const [newOrgName, setNewOrgName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [twilioDialogOpen, setTwilioDialogOpen] = useState(false);
+    const { selectedAgent } = useAgent()
+    const [twilioSettings, setTwilioSettings] = useState<TwilioSettings | null>(null);
+
+    const fetchTwilioSettings = async () => {
+        if (!selectedAgent) return;
+        try {
+            const response = await api.get(`/twilio/${selectedAgent.id}`);
+            if(response.data) {
+                setTwilioSettings(response.data);
+            }
+        } catch (error) {
+            console.error('Error fetching Twilio settings:', error);
+            toast.error('Failed to fetch Twilio settings');
+        }
+    }
+
+    useEffect(() => {
+        fetchTwilioSettings();
+    }, [selectedAgent]);
 
     const handleOrgChange = (orgId: string) => {
         setCurrentOrg(orgId);
@@ -130,6 +158,46 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
 
+            <Card className="rounded-sm shadow-sm">
+                <CardHeader>
+                    <CardTitle>Twilio Settings</CardTitle>
+                    <CardDescription>
+                        Configure Twilio settings for phone-based interactions
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Button
+                            onClick={() => setTwilioDialogOpen(true)}
+                            disabled={!selectedAgent}
+                        >
+                            Configure Twilio
+                        </Button>
+                        {twilioSettings && (
+                            <div className="mt-4 space-y-2">
+                                <p className="text-sm font-medium">Current Settings</p>
+                                <div className="text-sm text-muted-foreground">
+                                    <p>Account SID: {twilioSettings.accountSid}</p>
+                                    <p>Phone Number: {twilioSettings.phoneNumber}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {selectedAgent && (
+                <TwilioSettingsDialog
+                    agentId={selectedAgent.id}
+                    open={twilioDialogOpen}
+                    onOpenChange={setTwilioDialogOpen}
+                    initialData={twilioSettings}
+                    onSuccess={() => {
+                        toast.success("Twilio settings updated successfully");
+                        fetchTwilioSettings();
+                    }}
+                />
+            )}
         </div>
     );
 }

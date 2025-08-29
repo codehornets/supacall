@@ -1,36 +1,16 @@
 # Manyreply
 
-Manyreply is an AI first customer experience agent that revolutionizes how businesses handle customer interactions.
+Manyreply is an opensource AI voice agent platform
 
 ## Features
-
-### Customer Support
-- AI-powered response generation
-- Context-aware conversation handling
-- Multi-language support
-- Ticket management and routing
-- Analytics and reporting
-
-### Sales Inquiries
-- Lead qualification
-- Product recommendations
-- Quote generation
-- Follow-up automation
-- Sales pipeline integration
-
-## Channels Supported
-
-### Website
-- Live chat integration
-- Chatbot functionality
-- Knowledge base integration
-- Custom branding options
-
-### Phone Calls
-- Voice recognition
-- Real-time transcription
-- Call analytics
-- Chat on live call
+- Drag and drop agent builder
+- Realtime human-agent feedback
+- Join call real-time
+- Call transfer to Humans
+- Native Integrations for Cal.com and Calendly
+- Supports MCP to connect third-party tools
+- Evals and Realtime Simulation
+- Upload files to create your custom Knowledgebase 
 
 
 ## Getting Started

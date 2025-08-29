@@ -25,9 +25,9 @@ const routes = [
         path: "/console/contacts"
     },
     {
-        name: "Knowledge",
+        name: "Knowledge Base",
         icon: PiBooksFill,
-        path: "/console/knowledge"
+        path: "/console/knowledge-base"
     },
     {
         name: "Tools",

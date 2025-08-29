@@ -1,21 +1,20 @@
 import { Router } from "express";
 import { KnowledgeBaseService } from "../services/knowledgebase.service";
 import { authMiddleware } from "../middleware/auth.middleware";
+import { agentMiddleware } from "../middleware/agent.middleware";
 
 const router = Router();
 
 router.use(authMiddleware());
+router.use(agentMiddleware);
 
 // Create document
 router.post("/:agentId", async (req, res) => {
   try {
-    const { name, data, mimeType, size } = req.body;
+    const { name } = req.body;
     const result = await KnowledgeBaseService.createDocument({
       name,
-      data,
       agentId: req.params.agentId,
-      mimeType,
-      size
     });
 
     res.json(result);

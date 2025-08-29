@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum ConversationModality {
-  WEBSITE
-  PHONE
-}
-
 enum IndexStatus {
   PENDING
   INDEXING
@@ -82,17 +77,29 @@ model Agent {
   knowledge      AgentKnowledge[]
   contacts       Contact[]
   conversations  Conversation[]
+  twilio         AgentTwilio?
 
   @@index([organizationId])
 }
 
 model AgentTools {
+  agentId   String   @id @unique
+  agent     Agent    @relation(fields: [agentId], references: [id])
   cal       Json?
+  calendly  Json?
   mcp       Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  agentId   String   @id @unique
-  agent     Agent    @relation(fields: [agentId], references: [id])
+}
+
+model AgentTwilio {
+  agentId     String   @id @unique
+  agent       Agent    @relation(fields: [agentId], references: [id])
+  accountSid  String
+  authToken   String
+  phoneNumber String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model AgentKnowledge {
@@ -123,16 +130,15 @@ model Contact {
 }
 
 model Conversation {
-  id              String               @id @default(uuid())
+  id              String       @id @default(uuid())
   agentId         String
-  agent           Agent                @relation(fields: [agentId], references: [id])
+  agent           Agent        @relation(fields: [agentId], references: [id])
   contactId       String
-  contact         Contact              @relation(fields: [contactId], references: [id])
-  modality        ConversationModality
-  messages        Json                 @default("[]")
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  contact         Contact      @relation(fields: [contactId], references: [id])
+  messages        Json         @default("[]")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
   humanTakeoverAt DateTime?
   organizationId  String
-  organization    Organization         @relation(fields: [organizationId], references: [id])
+  organization    Organization @relation(fields: [organizationId], references: [id])
 }
