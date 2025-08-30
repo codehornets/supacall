@@ -5,6 +5,12 @@ import { useAgent } from "@/hooks/use-agent"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
+import { PiPhoneCall } from "react-icons/pi"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 interface Message {
     id: string
@@ -25,7 +31,9 @@ export default function ConversationsPage() {
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
     const { selectedAgent } = useAgent()
-
+    const [dialPhone, setDialPhone] = useState<string>("")
+    const [dialPhoneDialogOpen, setDialPhoneDialogOpen] = useState<boolean>(false)
+    
     useEffect(() => {
         if (!selectedAgent) return
         fetchConversations()
@@ -39,13 +47,51 @@ export default function ConversationsPage() {
         }
     }
 
+    const handleDial = async () => {
+        const toastId = toast.loading("Dialing phone number...")
+        setDialPhoneDialogOpen(false)
+        setDialPhone("")
+        try {
+            await api.post(`/phone-calls/outbound-call`, {
+                phoneNumber: dialPhone,
+                agentId: selectedAgent
+            })
+            toast.success("Phone number dialed successfully", { id: toastId })
+        } catch (err) {
+            console.error("Error dialing phone number:", err)
+            toast.error("Failed to dial phone number", { id: toastId })
+        }
+    }
+
     return (
         <div className="flex h-full">
             {/* Conversation List */}
             <div className="w-[300px] border-r">
                 <ScrollArea className="h-full">
                     <div>
-                        <h2 className="font-medium py-2 px-2 border-b border-zinc-200">Conversations</h2>
+                        <div className="flex items-center justify-between border-b border-zinc-200 py-2 px-2">
+                            <h2 className="font-medium ">Conversations</h2>
+                            <Dialog open={dialPhoneDialogOpen} onOpenChange={setDialPhoneDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        <PiPhoneCall />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>Dial a number</DialogHeader>
+                                    <DialogDescription> 
+                                        Dial a phone number to start a new conversation.
+                                    </DialogDescription>
+                                    <div className="space-y-2">
+                                        <Label>Phone Number</Label>
+                                        <Input placeholder="Enter a phone number" value={dialPhone} onChange={(e) => setDialPhone(e.target.value)} />
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={handleDial}>Dial</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                         <div className="space-y-2">
                             {conversations.map((conversation) => (
                                 <button

@@ -7,6 +7,7 @@ import twilioRouter from './routes/twilio.router';
 import knowledgeBaseRouter from './routes/knowledgebase.router';
 import conversationsRouter from './routes/conversations.router';
 import contactsRouter from './routes/contacts.router';
+import phoneCallRouter from './routes/phone.router';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.use('/auth', authRouter);
 router.use('/organizations', organizationRouter);
 router.use('/files', filesRouter);
 router.use('/agents', agentRouter);
+router.use('/phone-calls', phoneCallRouter)
 
 
 // Agent-specific routes
