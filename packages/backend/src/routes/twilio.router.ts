@@ -45,7 +45,7 @@ router.post('/', validateRequest({
     const { agentId } = req.params;
     const data = twilioSchema.parse(req.body);
 
-    const twilioSettings = await AgentsService.upsertTwilioSettings(agentId, data);
+    const twilioSettings = await AgentsService.upsertTwilioSettings(agentId, res.locals.org, data);
 
     return res.json(twilioSettings);
   } catch (error) {

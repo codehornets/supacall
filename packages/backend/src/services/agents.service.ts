@@ -66,13 +66,14 @@ export class AgentsService {
         });
     }
 
-    static async upsertTwilioSettings(agentId: string, data: TwilioSettings): Promise<AgentTwilio> {
+    static async upsertTwilioSettings(agentId: string, organizationId: string, data: TwilioSettings): Promise<AgentTwilio> {
         return await prisma.agentTwilio.upsert({
             where: { agentId },
             update: data,
             create: {
                 ...data,
                 agentId,
+                organizationId,
             },
         });
     }

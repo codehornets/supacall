@@ -50,7 +50,7 @@ export default function SettingsPage() {
         if (!selectedAgent) return;
         try {
             const response = await api.get(`/agents/${selectedAgent}/twilio`);
-            if(response.data) {
+            if (response.data) {
                 setTwilioSettings(response.data);
             }
         } catch (error) {
@@ -92,7 +92,7 @@ export default function SettingsPage() {
 
     return (
         <div className="space-y-3 p-5">
-            
+
             <Card className="rounded-sm shadow-sm">
                 <CardHeader>
                     <CardTitle>Account Settings</CardTitle>
@@ -165,24 +165,23 @@ export default function SettingsPage() {
                         Configure Twilio settings for phone-based interactions
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Button
-                            onClick={() => setTwilioDialogOpen(true)}
-                            disabled={!selectedAgent}
-                        >
-                            Configure Twilio
-                        </Button>
-                        {twilioSettings && (
-                            <div className="mt-4 space-y-2">
-                                <p className="text-sm font-medium">Current Settings</p>
-                                <div className="text-sm text-muted-foreground">
-                                    <p>Account SID: {twilioSettings.accountSid}</p>
-                                    <p>Phone Number: {twilioSettings.phoneNumber}</p>
-                                </div>
+                <CardContent>
+                    {twilioSettings && (
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium">Current Settings</p>
+                            <div className="text-sm text-muted-foreground">
+                                <p>Account SID: {twilioSettings.accountSid}</p>
+                                <p>Phone Number: {twilioSettings.phoneNumber}</p>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+                    <Button
+                        className="mt-5"
+                        onClick={() => setTwilioDialogOpen(true)}
+                        disabled={!selectedAgent}
+                    >
+                        Configure Twilio
+                    </Button>
                 </CardContent>
             </Card>
 
