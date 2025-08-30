@@ -26,7 +26,7 @@ router.get("/", validateRequest({
 
 
 router.post(
-    "/:contactId",
+    "/",
     validateRequest({
         params: z.object({
             agentId: z.string(),

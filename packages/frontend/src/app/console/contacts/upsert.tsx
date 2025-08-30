@@ -12,7 +12,7 @@ import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
-import { PiPlus } from "react-icons/pi"
+import { PiPencil, PiPlus } from "react-icons/pi"
 
 const contactFormSchema = z.object({
     name: z.string().optional(),
@@ -24,10 +24,8 @@ const contactFormSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactFormSchema>
 
-export default function UpsertContactPage() {
+export default function UpsertContactPage({ contactId, editContact, onSuccess }: { contactId: string | null, editContact: ContactFormValues | null, onSuccess: () => void }) {
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const contactId = searchParams.get("id")
     const { selectedAgent } = useAgent()
     const [open, setOpen] = useState(false)
 
@@ -41,33 +39,30 @@ export default function UpsertContactPage() {
     })
 
     useEffect(() => {
-        if (contactId && selectedAgent) {
-            const fetchContact = async () => {
-                try {
-                    const res = await api.get(`/agents/${selectedAgent}/contacts/${contactId}`)
-                    form.reset({
-                        name: res.data.name || "",
-                        phone: res.data.phone || "",
-                        email: res.data.email || "",
-                    })
-                } catch (err) {
-                    console.error("Error fetching contact:", err)
-                    toast.error("Failed to load contact details")
-                }
-            }
-
-            fetchContact()
+        if (contactId) {
+            form.reset({
+                name: editContact?.name || "",
+                phone: editContact?.phone || "",
+                email: editContact?.email || "",
+            })
+        } else if (editContact) {
+            form.reset(editContact)
         }
-    }, [contactId, selectedAgent, form])
+    }, [contactId, editContact, form])
 
     const onSubmit = async (data: ContactFormValues) => {
         if (!selectedAgent) return
 
         try {
-            await api.post(`/agents/${selectedAgent}/contacts${contactId ? `/${contactId}` : ""}`, data)
+            await api.post(`/agents/${selectedAgent}/contacts`, contactId ? { contactId: contactId, ...data } : data)
             toast.success(contactId ? "Contact updated successfully" : "Contact created successfully")
-            router.push("/console/contacts")
-            router.refresh()
+            onSuccess()
+            setOpen(false)
+            form.reset({
+                name: "",
+                phone: "",
+                email: "",
+            })
         } catch (error) {
             console.error("Error saving contact:", error)
             toast.error("Failed to save contact")
@@ -77,9 +72,9 @@ export default function UpsertContactPage() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button>
-                    <PiPlus />
-                    New Contact
+                <Button variant={contactId ? "outline" : "default"}>
+                    {contactId ? <PiPencil /> : <PiPlus />}
+                    {contactId ? "Edit Contact" : "New Contact"}
                 </Button>
             </DialogTrigger>
             <DialogContent>

@@ -86,7 +86,7 @@ export function UploadDocument({ agentId }: UploadDocumentProps) {
       });
 
       // Create document in knowledge base
-      await api.post(`/${agentId}/knowledge-base`, {
+      await api.post(`/agents/${agentId}/knowledge-base`, {
         name: awsFileName
       });
 

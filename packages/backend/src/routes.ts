@@ -17,10 +17,10 @@ router.use('/agents', agentRouter);
 
 
 // Agent-specific routes
-router.use('/:agentId/knowledge-base', knowledgeBaseRouter);
-router.use('/:agentId/twilio', twilioRouter);
-router.use('/:agentId/conversations', conversationsRouter);
-router.use('/:agentId/contacts', contactsRouter);
+router.use('/agents/:agentId/knowledge-base', knowledgeBaseRouter);
+router.use('/agents/:agentId/twilio', twilioRouter);
+router.use('/agents/:agentId/conversations', conversationsRouter);
+router.use('/agents/:agentId/contacts', contactsRouter);
 
 
 export default router;

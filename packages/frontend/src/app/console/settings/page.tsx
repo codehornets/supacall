@@ -49,7 +49,7 @@ export default function SettingsPage() {
     const fetchTwilioSettings = async () => {
         if (!selectedAgent) return;
         try {
-            const response = await api.get(`/${selectedAgent}/twilio`);
+            const response = await api.get(`/agents/${selectedAgent}/twilio`);
             if(response.data) {
                 setTwilioSettings(response.data);
             }
