@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 import { toast } from "sonner"
 import UpsertContactPage from "./upsert"
+import { PiTrash } from "react-icons/pi"
 
 interface Contact {
     id: string
@@ -34,6 +35,17 @@ export default function ContactsPage() {
         }
     }
 
+    const deleteContact = async (contactId: string) => {
+        try {
+            await api.delete(`/agents/${selectedAgent}/contacts/${contactId}`)
+            toast.success("Contact deleted successfully")
+            fetchContacts()
+        } catch (err) {
+            console.error("Error deleting contact:", err)
+            toast.error("Failed to delete contact")
+        }
+    }
+
     return (
         <div>
             <div className="px-5 flex items-center justify-between border-b border-zinc-200 h-[50px]">
@@ -56,8 +68,9 @@ export default function ContactsPage() {
                             <TableCell>{contact.name || '-'}</TableCell>
                             <TableCell>{contact.phone}</TableCell>
                             <TableCell>{contact.email || '-'}</TableCell>
-                            <TableCell>
+                            <TableCell className="flex items-center gap-2">
                                 <UpsertContactPage contactId={contact.id} editContact={{ name: contact.name || "", phone: contact.phone, email: contact.email || "" }} onSuccess={fetchContacts} />
+                                <Button variant="destructive" size="icon" onClick={() => deleteContact(contact.id)}><PiTrash /></Button>
                             </TableCell>
                         </TableRow>
                     ))}

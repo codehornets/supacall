@@ -16,10 +16,10 @@ export class ContactsService {
         return contact;
     }
 
-    static async updateContact(contactId: string, phone: string, organizationId: string, name?: string, email?: string) {
+    static async updateContact(contactId: string, agentId: string, phone: string, organizationId: string, name?: string, email?: string) {
         const contact = await prisma.contact.update({
-            where: { id: contactId },
-            data: { name, email, phone, organizationId }
+            where: { id: contactId, organizationId, agentId },
+            data: { name, email, phone, organizationId, agentId }
         });
         return contact;
     }

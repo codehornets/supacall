@@ -18,9 +18,11 @@ router.get("/", validateRequest({
     try {
         const contacts = await ContactsService.getContacts(req.params.agentId, res.locals.org);
         res.json(contacts);
+        return;
     } catch (error) {
         console.error("Error getting contacts:", error);
         res.status(500).json({ error: "Failed to get contacts" });
+        return;
     }
 });
 
@@ -30,9 +32,9 @@ router.post(
     validateRequest({
         params: z.object({
             agentId: z.string(),
-            contactId: z.string().optional()
         }),
         body: z.object({
+            contactId: z.string().optional(),
             phone: z.string(),
             name: z.string().optional(),
             email: z.string().optional()
@@ -40,17 +42,20 @@ router.post(
     }),
     async (req, res) => {
         try {
-            const { phone, name, email } = req.body;
-            if (req.params.contactId) {
-                const contact = await ContactsService.updateContact(req.params.contactId, phone, res.locals.org, name, email);
+            const { phone, name, email, contactId } = req.body;
+            if (contactId) {
+                const contact = await ContactsService.updateContact(contactId, req.params.agentId, phone, res.locals.org, name, email);
                 res.json(contact);
+                return;
             } else {
                 const contact = await ContactsService.createContact(req.params.agentId, phone, res.locals.org, name, email);
                 res.json(contact);
+                return;
             }
         } catch (error) {
             console.error("Error creating contact:", error);
             res.status(500).json({ error: "Failed to create contact" });
+            return;
         }
     }
 )
@@ -65,9 +70,11 @@ router.delete("/:contactId", validateRequest({
     try {
         await ContactsService.deleteContact(req.params.contactId, req.params.agentId, res.locals.org);
         res.json({ message: "Contact deleted successfully" });
+        return;
     } catch (error) {
         console.error("Error deleting contact:", error);
         res.status(500).json({ error: "Failed to delete contact" });
+        return;
     }
 });
 

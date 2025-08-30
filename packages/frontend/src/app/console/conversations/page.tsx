@@ -40,12 +40,12 @@ export default function ConversationsPage() {
     }
 
     return (
-        <div className="flex h-[calc(100vh-4rem)]">
+        <div className="flex h-full">
             {/* Conversation List */}
-            <div className="w-[250px] border-r">
+            <div className="w-[300px] border-r">
                 <ScrollArea className="h-full">
-                    <div className="p-4">
-                        <h2 className="font-semibold mb-4">Conversations</h2>
+                    <div>
+                        <h2 className="font-medium py-2 px-2 border-b border-zinc-200">Conversations</h2>
                         <div className="space-y-2">
                             {conversations.map((conversation) => (
                                 <button
@@ -68,7 +68,7 @@ export default function ConversationsPage() {
                                 </button>
                             ))}
                             {conversations.length === 0 && (
-                                <div className="text-center text-muted-foreground py-4">
+                                <div className="text-muted-foreground px-4 py-4">
                                     No conversations yet
                                 </div>
                             )}
