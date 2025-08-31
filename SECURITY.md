@@ -2,9 +2,9 @@
 
 ## Reporting a Vulnerability
 
-At Supacall, we take security seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+At Nico, we take security seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
-Please email us at security@supacall.ai with the following information:
+Please email us at security@usenico.com with the following information:
 - A description of the vulnerability
 - Steps to reproduce the issue
 - Potential impact of the vulnerability
@@ -25,4 +25,4 @@ Please email us at security@supacall.ai with the following information:
 
 ## Scope
 
-This security policy applies to all repositories and services under the Supacall organization.
+This security policy applies to all repositories and services under the Nico organization.

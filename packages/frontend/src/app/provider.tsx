@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { PiSpinner } from "react-icons/pi";
 
 export default function AppProvider({ children }: { children: React.ReactNode }) {

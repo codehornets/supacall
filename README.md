@@ -1,6 +1,6 @@
-# Supacall
+# Nico
 
-Supacall is an opensource AI voice agent platform
+Nico is an opensource AI voice agent platform
 
 ## Features
 - Drag and drop agent builder
@@ -24,8 +24,8 @@ Supacall is an opensource AI voice agent platform
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/supacall.git
-cd supacall
+git clone https://github.com/yourusername/nico.git
+cd nico
 ```
 
 2. Install dependencies:

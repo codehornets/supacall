@@ -33,7 +33,7 @@ export default function ConversationsPage() {
     const { selectedAgent } = useAgent()
     const [dialPhone, setDialPhone] = useState<string>("")
     const [dialPhoneDialogOpen, setDialPhoneDialogOpen] = useState<boolean>(false)
-    
+
     useEffect(() => {
         if (!selectedAgent) return
         fetchConversations()
@@ -79,7 +79,7 @@ export default function ConversationsPage() {
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>Dial a number</DialogHeader>
-                                    <DialogDescription> 
+                                    <DialogDescription>
                                         Dial a phone number to start a new conversation.
                                     </DialogDescription>
                                     <div className="space-y-2">
