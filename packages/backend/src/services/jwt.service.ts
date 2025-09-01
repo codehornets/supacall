@@ -3,18 +3,20 @@ import { prisma } from '../lib/db';
 import crypto from 'crypto';
 import { JWT_SECRET } from '../lib/constants';
 
-const ACCESS_TOKEN_EXPIRY = '5m';
+
 
 export class JwtService {
-  private static generateToken(payload: any, expiresIn: any): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn });
+
+  static generateAccessToken(userId: string): { accessToken: string; accessTokenExpiry: string } {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: "5m" });
+    return {
+      accessToken: token,
+      accessTokenExpiry: expiresAt.toISOString(),
+    };
   }
 
-  static generateAccessToken(userId: string): string {
-    return this.generateToken({ userId }, ACCESS_TOKEN_EXPIRY);
-  }
-
-  static async generateRefreshToken(userId: string): Promise<string> {
+  static async generateRefreshToken(userId: string): Promise<{ refreshToken: string; refreshTokenExpiry: string }> {
     const token = crypto.randomBytes(40).toString('hex');
     const expiresAt = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000); // 10 days
 
@@ -26,7 +28,10 @@ export class JwtService {
       },
     });
 
-    return token;
+    return {
+      refreshToken: token,
+      refreshTokenExpiry: expiresAt.toISOString(),
+    };
   }
 
   static async verifyRefreshToken(token: string): Promise<string | null> {

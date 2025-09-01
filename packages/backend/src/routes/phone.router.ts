@@ -9,7 +9,7 @@ import { prisma } from "../lib/db"
 import { ConversationsService } from "../services/conversations.service"
 import { ExecutorService } from "../services/executor.service"
 import Redis from "ioredis"
-import { REDIS_URL } from "../lib/constants"
+import { OPENAI_API_KEY, REDIS_URL, TWILIO_WEBHOOK_DOMAIN } from "../lib/constants"
 
 const router = Router()
 
@@ -174,7 +174,7 @@ export function usePhoneCallRouter(app: Application) {
 
             const call = await twilioClient.calls(callSid).fetch()
             
-            phoneNumber = call.direction === "inbound" ? call.to : call.from
+            phoneNumber = call.direction === "inbound" ? call.from : call.to
 
             // Find the agent based on the phone number
             const twilioConfigAgent = await prisma.agentTwilio.findFirst({
@@ -230,7 +230,7 @@ export function usePhoneCallRouter(app: Application) {
 
             openaiWs = new WebSocket(openaiUrl, {
                 headers: {
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`,
                     'OpenAI-Beta': 'realtime=v1'
                 }
             });
@@ -553,7 +553,7 @@ export function usePhoneCallRouter(app: Application) {
 
 router.post("/incoming-call", async (req, res) => {
     res.type("text/xml")
-    res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say language="en">This call might be recorded or monitored for quality assurance purposes</Say><Connect><Stream url="wss://901e1e8ff8f4.ngrok-free.app/phone-call" /></Connect></Response>`)
+    res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say language="en">This call might be recorded or monitored for quality assurance purposes</Say><Connect><Stream url="wss://${TWILIO_WEBHOOK_DOMAIN}/phone-call" /></Connect></Response>`)
     return
 })
 
@@ -570,7 +570,15 @@ router.post(
         const { phoneNumber, agentId } = req.body
 
         const agent = await AgentsService.getAgentById(agentId, res.locals.org)
-        const twilioSettings = await AgentsService.getTwilioSettings(agentId)
+
+        if (!agent) {
+            res.status(400).json({
+                message: "Agent not found"
+            })
+            return
+        }
+
+        const twilioSettings = await AgentsService.getTwilioSettings(agent.id)
 
         if (!twilioSettings) {
             res.status(400).json({
@@ -584,7 +592,7 @@ router.post(
         await twilioClient.calls.create({
             from: twilioSettings.phoneNumber,
             to: phoneNumber,
-            twiml: `<?xml version="1.0" encoding="UTF-8"?><Response><Say language="en">This call might be recorded or monitored for quality assurance purposes</Say><Connect><Stream url="wss://901e1e8ff8f4.ngrok-free.app/phone-call" /></Connect></Response>`
+            twiml: `<?xml version="1.0" encoding="UTF-8"?><Response><Say language="en">This call might be recorded or monitored for quality assurance purposes</Say><Connect><Stream url="wss://${TWILIO_WEBHOOK_DOMAIN}/phone-call" /></Connect></Response>`
         })
 
         res.status(200).json({

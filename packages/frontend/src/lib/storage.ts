@@ -1,14 +1,18 @@
-export const setTokens = (accessToken: string, refreshToken: string) => {
+export const setTokens = (accessToken: string, refreshToken: string, accessTokenExpiry: string, refreshTokenExpiry: string) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem('accessToken', accessToken);
   localStorage.setItem('refreshToken', refreshToken);
+  localStorage.setItem('accessTokenExpiry', accessTokenExpiry);
+  localStorage.setItem('refreshTokenExpiry', refreshTokenExpiry);
 };
 
 export const getTokens = () => {
-  if (typeof window === 'undefined') return { accessToken: null, refreshToken: null };
+  if (typeof window === 'undefined') return { accessToken: null, refreshToken: null, accessTokenExpiry: null, refreshTokenExpiry: null };
   return {
     accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken')
+    refreshToken: localStorage.getItem('refreshToken'),
+    accessTokenExpiry: localStorage.getItem('accessTokenExpiry'),
+    refreshTokenExpiry: localStorage.getItem('refreshTokenExpiry')
   };
 };
 
@@ -16,6 +20,8 @@ export const removeTokens = () => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('accessTokenExpiry');
+  localStorage.removeItem('refreshTokenExpiry');
 };
 
 export const setCurrentOrgId = (orgId: string) => {

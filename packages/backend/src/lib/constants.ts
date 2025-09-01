@@ -26,3 +26,9 @@ export const AWS_STORAGE_BUCKET_NAME = process.env.AWS_STORAGE_BUCKET_NAME || ""
 export const WEAVIATE_URL = process.env.WEAVIATE_URL || ""
 export const WEAVIATE_API_KEY = process.env.WEAVIATE_API_KEY || ""
 export const WEAVIATE_LOCAL_URL = process.env.WEAVIATE_LOCAL_URL || ""
+
+// Twilio Configuration
+export const TWILIO_WEBHOOK_DOMAIN = process.env.TWILIO_WEBHOOK_DOMAIN || ""
+
+// OpenAI Configuration
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY || ""

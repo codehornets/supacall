@@ -1,13 +1,20 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { ConversationsService } from "../services/conversations.service";
+import { validateRequest } from "zod-express-middleware";
+import { z } from "zod";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(authMiddleware());
 
 router.get(
-    "/:agentId",
+    "/",
+    validateRequest({
+        params: z.object({
+            agentId: z.string()
+        })
+    }),
     async (req, res) => {
         try {
             const { agentId } = req.params;

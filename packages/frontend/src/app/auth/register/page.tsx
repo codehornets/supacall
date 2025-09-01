@@ -55,7 +55,7 @@ export default function RegisterPage() {
         values.password,
         values.organizationName
       );
-      router.push("/auth/verify");
+      window.location.href = "/";
     } catch (error: any) {
       toast.error(error.message || "Failed to register");
     }

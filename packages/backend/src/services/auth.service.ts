@@ -23,12 +23,14 @@ interface LoginResponse {
     name: string;
     role: string;
   }>;
+  accessTokenExpiry: string;
+  refreshTokenExpiry: string;
   accessToken: string;
   refreshToken: string;
 }
 
 export class AuthService {
-  static async register(input: RegisterInput): Promise<LoginResponse> {
+  static async register(input: RegisterInput): Promise<void> {
     const existingUser = await prisma.user.findUnique({
       where: { email: input.email },
     });
@@ -64,25 +66,6 @@ export class AuthService {
 
     // Send verification email
     await sendVerificationEmail(user.email, verificationCode);
-
-    const accessToken = JwtService.generateAccessToken(user.id);
-    const refreshToken = await JwtService.generateRefreshToken(user.id);
-
-    return {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        isVerified: user.isVerified,
-      },
-      organizations: [{
-        id: organization.id,
-        name: organization.name,
-        role: 'ADMIN',
-      }],
-      accessToken,
-      refreshToken,
-    };
   }
 
   static async login(email: string, password: string): Promise<LoginResponse> {
@@ -121,8 +104,10 @@ export class AuthService {
         name: membership.organization.name,
         role: membership.role,
       })),
-      accessToken,
-      refreshToken,
+      accessTokenExpiry: accessToken.accessTokenExpiry,
+      refreshTokenExpiry: refreshToken.refreshTokenExpiry,
+      accessToken: accessToken.accessToken,
+      refreshToken: refreshToken.refreshToken,
     };
   }
 
@@ -152,7 +137,12 @@ export class AuthService {
     });
   }
 
-  static async refreshToken(token: string): Promise<{ accessToken: string; refreshToken: string }> {
+  static async refreshToken(token: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    accessTokenExpiry: string;
+    refreshTokenExpiry: string
+  }> {
     const userId = await JwtService.verifyRefreshToken(token);
     if (!userId) {
       throw new Error('Invalid refresh token');
@@ -165,7 +155,7 @@ export class AuthService {
     const accessToken = JwtService.generateAccessToken(userId);
     const refreshToken = await JwtService.generateRefreshToken(userId);
 
-    return { accessToken, refreshToken };
+    return { accessToken: accessToken.accessToken, refreshToken: refreshToken.refreshToken, accessTokenExpiry: accessToken.accessTokenExpiry, refreshTokenExpiry: refreshToken.refreshTokenExpiry };
   }
 
   static async logout(refreshToken: string): Promise<void> {
@@ -193,7 +183,7 @@ export class AuthService {
     }
 
     // We don't need to generate new tokens for /me endpoint
-    const { accessToken, refreshToken } = { accessToken: '', refreshToken: '' };
+    const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } = { accessToken: '', refreshToken: '', accessTokenExpiry: '', refreshTokenExpiry: '' };
 
     return {
       user: {
@@ -207,8 +197,10 @@ export class AuthService {
         name: membership.organization.name,
         role: membership.role,
       })),
-      accessToken,
-      refreshToken,
+      accessTokenExpiry: accessTokenExpiry,
+      refreshTokenExpiry: refreshTokenExpiry,
+      accessToken: accessToken,
+      refreshToken: refreshToken
     };
   }
 }

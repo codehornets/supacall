@@ -92,13 +92,13 @@ export default function ConversationsPage() {
                                 </DialogContent>
                             </Dialog>
                         </div>
-                        <div className="space-y-2">
+                        <div>
                             {conversations.map((conversation) => (
                                 <button
                                     key={conversation.id}
                                     onClick={() => setSelectedConversation(conversation)}
                                     className={cn(
-                                        "w-full text-left p-3 rounded-lg hover:bg-muted transition-colors",
+                                        "w-full text-left p-3 hover:bg-muted transition-colors border-b border-zinc-200",
                                         selectedConversation?.id === conversation.id && "bg-muted"
                                     )}
                                 >

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
-import { 
+import {
   setTokens,
   removeTokens,
   setCurrentOrgId,
@@ -55,10 +55,10 @@ export const useAuth = create<State & Actions>((set, get) => ({
 
   init: async () => {
     try {
-      const { accessToken, refreshToken } = getTokens();
-      
+      const { refreshToken } = getTokens();
+
       // If no tokens, not authenticated
-      if (!accessToken || !refreshToken) {
+      if (!refreshToken) {
         set({ isLoading: false, isAuthenticated: false, isInitialized: true });
         return;
       }
@@ -90,9 +90,6 @@ export const useAuth = create<State & Actions>((set, get) => ({
         isInitialized: true,
       });
     } catch (error) {
-      // Clear everything if initialization fails
-      removeTokens();
-      removeCurrentOrgId();
       set({
         user: null,
         organizations: [],
@@ -109,9 +106,9 @@ export const useAuth = create<State & Actions>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { user, organizations, accessToken, refreshToken } = response.data;
+      const { user, organizations, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } = response.data;
 
-      setTokens(accessToken, refreshToken);
+      setTokens(accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry);
 
       if (organizations.length > 0) {
         setCurrentOrgId(organizations[0].id);
@@ -145,9 +142,9 @@ export const useAuth = create<State & Actions>((set, get) => ({
         organizationName,
       });
 
-      const { user, organizations, accessToken, refreshToken } = response.data;
+      const { user, organizations, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } = response.data;
 
-      setTokens(accessToken, refreshToken);
+      setTokens(accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry);
 
       if (organizations.length > 0) {
         setCurrentOrgId(organizations[0].id);

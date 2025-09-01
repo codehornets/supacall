@@ -2,9 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import router from './routes';
 import { SERVER_PORT } from './lib/constants';
+import expressWs from 'express-ws';
+import { usePhoneCallRouter } from './routes/phone.router';
 
 async function main() {
   const app = express();
+  usePhoneCallRouter(expressWs(app).app);
 
   // Configure CORS with credentials
   app.use(cors({

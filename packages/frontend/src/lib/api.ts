@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getTokens, setTokens, removeTokens, getCurrentOrgId } from './storage';
+import { getTokens, setTokens, removeTokens, getCurrentOrgId, removeCurrentOrgId } from './storage';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
 
@@ -11,13 +11,29 @@ export const api = axios.create({
   withCredentials: true, // Important for cookies
 });
 
+
 // Request interceptor
 api.interceptors.request.use(
-  (config) => {
-    const { accessToken } = getTokens();
+  async (config) => {
+    const { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry } = getTokens();
     const currentOrgId = getCurrentOrgId();
 
-    if (accessToken) {
+    if (
+      accessTokenExpiry &&
+      accessToken &&
+      new Date(accessTokenExpiry) < new Date() &&
+      refreshToken &&
+      refreshTokenExpiry &&
+      new Date(refreshTokenExpiry) > new Date()
+    ) {
+      const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {
+        refreshToken,
+      });
+      setTokens(response.data.accessToken, response.data.refreshToken, response.data.accessTokenExpiry, response.data.refreshTokenExpiry);
+      config.headers.Authorization = `Bearer ${response.data.accessToken}`;
+    }
+
+    if (accessToken && accessTokenExpiry && new Date(accessTokenExpiry) > new Date()) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
@@ -32,41 +48,17 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // If error is not 401 or request has already been retried
-    if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    originalRequest._retry = true;
-
-    try {
-      const { refreshToken } = getTokens();
-      if (!refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {
-        refreshToken,
-      }, {
-        withCredentials: true
-      });
-
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
-      setTokens(accessToken, newRefreshToken);
-
-      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-      return axios(originalRequest);
-    } catch (refreshError) {
-      // Clear auth data on refresh token failure
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response.status === 401 || error.response.status === 403) {
       removeTokens();
+      removeCurrentOrgId();
       window.location.href = '/auth/login';
-      return Promise.reject(refreshError);
     }
+    return Promise.reject(error);
   }
 );
