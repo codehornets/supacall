@@ -5,18 +5,18 @@ import { useAgent } from "@/hooks/use-agent"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
-import { PiPhoneCall } from "react-icons/pi"
+import { PiPaperPlaneRight, PiPhoneCall } from "react-icons/pi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { startCase } from "lodash"
 
 interface Message {
-    id: string
     content: string
     role: "user" | "assistant"
-    createdAt: string
+    timestamp: string
 }
 
 interface Contact {
@@ -114,7 +114,7 @@ export default function ConversationsPage() {
                                     <div className="font-medium">
                                         {conversation.contact.name || conversation.contact.phone}
                                     </div>
-                                    <div className="text-sm text-muted-foreground truncate">
+                                    <div className="text-sm text-muted-foreground truncate overflow-hidden max-w-[250px] text-ellipsis">
                                         {conversation.messages[conversation.messages.length - 1]?.content || "No messages"}
                                     </div>
                                     <div className="text-xs text-muted-foreground mt-1">
@@ -133,40 +133,53 @@ export default function ConversationsPage() {
             </div>
 
             {/* Conversation View */}
-            <div className="flex-1 flex flex-col">
+            <div className="h-full w-[calc(100%-300px)]">
                 {conversations[selectedConversation] ? (
                     <>
                         {/* Header */}
-                        <div className="border-b p-4">
+                        <div className="border-b h-[50px] flex items-center px-4">
                             <h2 className="font-semibold">
                                 {conversations[selectedConversation].contact.name || conversations[selectedConversation].contact.phone}
                             </h2>
                         </div>
 
                         {/* Messages */}
-                        <ScrollArea className="flex-1 p-4">
-                            <div className="space-y-4">
-                                {conversations[selectedConversation].messages.map((message) => (
+                        <div className="h-[calc(100vh-150px)] p-5 space-y-4 overflow-y-auto overflow-x-hidden">
+                            {conversations[selectedConversation].messages.map((message, index) => (
+                                <div key={`msg-${index}`}>
+                                    <p className={cn(
+                                        "text-xs max-w-[80%] text-muted-foreground",
+                                        message.role === "assistant" ?
+                                            "text-primary ml-auto" :
+                                            "text-muted-foreground"
+                                    )}>{startCase(message.role)}</p>
                                     <div
-                                        key={message.id}
                                         className={cn(
                                             "max-w-[80%] p-4 rounded-lg",
-                                            message.role === "user"
+                                            message.role === "assistant"
                                                 ? "bg-primary text-primary-foreground ml-auto"
                                                 : "bg-muted"
                                         )}
                                     >
                                         {message.content}
                                         <div className="text-xs opacity-70 mt-1">
-                                            {new Date(message.createdAt).toLocaleTimeString()}
+                                            {new Date(message.timestamp).toLocaleTimeString()}
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Input */}
+                        <div className="h-[100px] border-t border-zinc-200 flex items-end justify-end p-3">
+                            <div className="h-full w-full">
+                                <textarea placeholder="Type a message" className="w-full resize-none outline-none" />
                             </div>
-                        </ScrollArea>
+                            <Button size="icon"><PiPaperPlaneRight /></Button>
+                        </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
                         Select a conversation to view messages
                     </div>
                 )}
