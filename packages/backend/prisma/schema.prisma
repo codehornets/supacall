@@ -40,6 +40,7 @@ model Organization {
   knowedgeIndexes    AgentKnowledgeIndex[]
   agentKnowledgeDocs AgentKnowledge[]
   twilioConfig       AgentTwilio[]
+  agentTools         AgentTools[]
 }
 
 model OrganizationMember {
@@ -70,8 +71,6 @@ model Agent {
   id             String           @id @default(uuid())
   name           String
   description    String
-  allowWebsite   Boolean          @default(true)
-  allowPhone     Boolean          @default(false)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   organizationId String
@@ -86,13 +85,15 @@ model Agent {
 }
 
 model AgentTools {
-  agentId   String   @id @unique
-  agent     Agent    @relation(fields: [agentId], references: [id])
-  cal       Json?
-  calendly  Json?
-  mcp       Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  agentId        String       @id @unique
+  agent          Agent        @relation(fields: [agentId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  cal            Json?
+  calendly       Json?
+  mcp            Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model AgentTwilio {

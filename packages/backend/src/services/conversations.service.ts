@@ -6,7 +6,10 @@ import { ContactsService } from "./contacts.service";
 export class ConversationsService {
     static async getConversations(agentId: string) {
         const conversations = await prisma.conversation.findMany({
-            where: { agentId }
+            where: { agentId },
+            include: {
+                contact: true
+            }
         });
         return conversations;
     }
@@ -40,7 +43,7 @@ export class ConversationsService {
         }
 
         // Parse existing messages
-        const messages = JSON.parse(conversation.messages as string);
+        const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
 
         // Add new message
         messages.push({
@@ -53,7 +56,7 @@ export class ConversationsService {
         const updatedConversation = await prisma.conversation.update({
             where: { id: conversationId },
             data: {
-                messages: JSON.stringify(messages)
+                messages: messages
             }
         });
 

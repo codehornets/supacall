@@ -8,6 +8,7 @@ import knowledgeBaseRouter from './routes/knowledgebase.router';
 import conversationsRouter from './routes/conversations.router';
 import contactsRouter from './routes/contacts.router';
 import phoneCallRouter from './routes/phone.router';
+import toolsRouter from './routes/tools.router';
 
 const router = Router();
 
@@ -23,6 +24,6 @@ router.use('/agents/:agentId/knowledge-base', knowledgeBaseRouter);
 router.use('/agents/:agentId/twilio', twilioRouter);
 router.use('/agents/:agentId/conversations', conversationsRouter);
 router.use('/agents/:agentId/contacts', contactsRouter);
-
+router.use('/agents/:agentId/tools', toolsRouter);
 
 export default router;

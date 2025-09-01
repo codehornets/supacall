@@ -19,7 +19,6 @@ export default function KnowledgeBasePage() {
 
   const fetchKnowledgeBase = async () => {
     try {
-      if (!selectedAgent) return;
       const response = await api.get(`/agents/${selectedAgent}/knowledge-base`);
       setData(response.data);
     } catch (error) {
@@ -29,7 +28,6 @@ export default function KnowledgeBasePage() {
 
   const handleDelete = async (id: string) => {
     try {
-      if (!selectedAgent) return; 
       setIsDeleting(id);
       await api.delete(`/agents/${selectedAgent}/knowledge-base/${id}`);
       toast.success("Document deleted successfully");
@@ -42,9 +40,9 @@ export default function KnowledgeBasePage() {
   };
 
   useEffect(() => {
+    if(!selectedAgent) return;
     fetchKnowledgeBase();
   }, []);
-
 
   return (
     <div>

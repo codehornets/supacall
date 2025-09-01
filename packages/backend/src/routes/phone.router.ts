@@ -64,56 +64,14 @@ export function usePhoneCallRouter(app: Application) {
         let streamSid: string | null = null;
         let callSid: string | null = null;
         let accountSid: string | null = null;
-        let silenceTimer: NodeJS.Timeout | null = null;
-        let hasSpoken = false;
         let conversationStarted = false;
         let twilioClient: twilio.Twilio | null = null;
         let agentId: string | null = null;
         let organizationId: string | null = null;
-        let phoneNumber: string | null = null;
+        let agentPhoneNumber: string | null = null;
+        let contactPhoneNumber: string | null = null;
         let conversationId: string | null = null;
         let redis = new Redis(REDIS_URL);
-
-        // Silence handling functions
-        const startSilenceTimer = () => {
-            clearSilenceTimer();
-            silenceTimer = setTimeout(() => {
-                if (openaiWs && openaiWs.readyState === WebSocket.OPEN) {
-                    const silencePrompts = [
-                        "Is there anything specific I can help you with today?",
-                        "Are you still there? How can I assist you?",
-                        "I'm here to help. What questions do you have?",
-                        "Feel free to ask me anything about our products or services.",
-                        "What would you like to know more about?"
-                    ];
-
-                    const randomPrompt = silencePrompts[Math.floor(Math.random() * silencePrompts.length)];
-
-                    // Create a text input to trigger a response
-                    const textInput = {
-                        type: 'conversation.item.create',
-                        item: {
-                            type: 'message',
-                            role: 'user',
-                            content: [{
-                                type: 'input_text',
-                                text: `[INTERNAL_SILENCE_PROMPT: Please respond naturally to break the silence with: "${randomPrompt}"]`
-                            }]
-                        }
-                    };
-
-                    openaiWs.send(JSON.stringify(textInput));
-                    openaiWs.send(JSON.stringify({ type: 'response.create' }));
-                }
-            }, hasSpoken ? 8000 : 3000); // 8 seconds after user has spoken, 3 seconds initially
-        };
-
-        const clearSilenceTimer = () => {
-            if (silenceTimer) {
-                clearTimeout(silenceTimer);
-                silenceTimer = null;
-            }
-        };
 
         const sendInitialGreeting = () => {
             if (openaiWs && openaiWs.readyState === WebSocket.OPEN && !conversationStarted) {
@@ -143,16 +101,13 @@ export function usePhoneCallRouter(app: Application) {
 
                 openaiWs.send(JSON.stringify(greetingInput));
                 openaiWs.send(JSON.stringify({ type: 'response.create' }));
-
-                // Start silence timer after greeting
-                startSilenceTimer();
             }
         };
 
 
         const initializeAgent = async () => {
 
-            if(!accountSid || !callSid) {
+            if (!accountSid || !callSid) {
                 return
             }
 
@@ -168,22 +123,30 @@ export function usePhoneCallRouter(app: Application) {
 
             // Configure twilio
             twilioClient = twilio(
-                twilioSettingsForAccountSid.accountSid, 
+                twilioSettingsForAccountSid.accountSid,
                 twilioSettingsForAccountSid.authToken
             )
 
             const call = await twilioClient.calls(callSid).fetch()
-            
-            phoneNumber = call.direction === "inbound" ? call.from : call.to
+
+
+            console.log("call details")
+            console.log("--------------------------------")
+            console.log("from:", call.from)
+            console.log("to:", call.to)
+            console.log("direction:", call.direction)
+
+            agentPhoneNumber = call.direction === "outbound-api" ? call.from : call.to
+            contactPhoneNumber = call.direction === "outbound-api" ? call.to : call.from
 
             // Find the agent based on the phone number
             const twilioConfigAgent = await prisma.agentTwilio.findFirst({
                 where: {
-                    phoneNumber: phoneNumber
+                    phoneNumber: agentPhoneNumber
                 }
             })
 
-            if(!twilioConfigAgent) {
+            if (!twilioConfigAgent) {
                 return
             }
 
@@ -191,8 +154,8 @@ export function usePhoneCallRouter(app: Application) {
             organizationId = twilioConfigAgent.organizationId
 
             const conversation = await ConversationsService.createConversation(
-                agentId, 
-                phoneNumber, 
+                agentId,
+                contactPhoneNumber,
                 organizationId
             )
 
@@ -201,10 +164,10 @@ export function usePhoneCallRouter(app: Application) {
             await redis.psubscribe(`__keyspace@0__:conversation:${conversationId}`)
             redis.on("pmessage", async (pattern, channel, message) => {
                 const conversation = await redis.get(`conversation:${conversationId}`)
-                if(conversation) {
+                if (conversation) {
                     const conversationData = JSON.parse(conversation)
-                    if(conversationData[-1].type === "human_feedback") {
-                        if(openaiWs) {
+                    if (conversationData[-1].type === "human_feedback") {
+                        if (openaiWs) {
                             openaiWs.send(JSON.stringify({
                                 type: "conversation.item.create",
                                 item: {
@@ -342,7 +305,7 @@ export function usePhoneCallRouter(app: Application) {
                             if (message.name === 'phone_agent' && message.arguments) {
                                 try {
 
-                                    if(!agentId || !conversationId) {
+                                    if (!agentId || !conversationId) {
                                         throw new Error("Agent or conversation not found")
                                     }
 
@@ -389,9 +352,6 @@ export function usePhoneCallRouter(app: Application) {
                                             openaiWs = null;
                                         }
 
-                                        // Clear silence timer
-                                        clearSilenceTimer();
-
                                         // Close Twilio WebSocket
                                         ws.close();
                                     } catch (error) {
@@ -404,8 +364,6 @@ export function usePhoneCallRouter(app: Application) {
 
                         case 'input_audio_buffer.speech_started':
                             console.log('User started speaking');
-                            hasSpoken = true;
-                            clearSilenceTimer(); // Stop silence timer when user speaks
 
                             // Stop any ongoing audio playback to Twilio
                             if (streamSid) {
@@ -417,36 +375,46 @@ export function usePhoneCallRouter(app: Application) {
                             }
                             break;
 
-                        case 'transcript':
-                            if (message.transcript && conversationId) {
-                                // Store user's transcript
+                        // User Transcript
+                        case 'conversation.item.input_audio_transcription.completed':
+                            if (!conversationId || !message.transcript) {
+                                break;
+                            }
+
+                            try {
+                                console.log({ role: "user", content: message.transcript })
                                 await ConversationsService.syncConversation(conversationId, {
-                                    role: 'user',
+                                    role: "user",
                                     content: message.transcript
                                 });
+                                console.log("Successfully stored transcript in conversation");
+                            } catch (error) {
+                                console.error("Error storing transcript:", error);
                             }
-                            break;
 
                         case 'input_audio_buffer.speech_stopped':
                             console.log('User stopped speaking');
-                            // Start silence timer when user stops speaking
-                            startSilenceTimer();
                             break;
 
-                        case 'response.text.delta':
+                        case 'response.audio_transcript.done':
                             // Accumulate assistant's response
-                            if (message.delta && conversationId) {
+                            if (!conversationId || !message.transcript) {
+                                break;
+                            }
+                            try {
+                                console.log({ role: "assistant", content: message.transcript })
                                 await ConversationsService.syncConversation(conversationId, {
                                     role: 'assistant',
-                                    content: message.delta
+                                    content: message.transcript
                                 });
+                                console.log("Successfully stored content in conversation");
+                            } catch (error) {
+                                console.error("Error storing content:", error);
                             }
                             break;
 
                         case 'response.audio.done':
                             console.log('AI finished speaking');
-                            // Restart silence timer after AI finishes speaking
-                            startSilenceTimer();
                             break;
 
                         case 'error':
@@ -528,10 +496,9 @@ export function usePhoneCallRouter(app: Application) {
         ws.on('close', () => {
             console.log('Twilio WebSocket connection closed');
             // Clean up timers and OpenAI connection
-            if(redis) {
+            if (redis) {
                 redis.disconnect()
             }
-            clearSilenceTimer();
             if (openaiWs) {
                 openaiWs.close();
                 openaiWs = null;

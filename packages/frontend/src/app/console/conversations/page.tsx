@@ -19,17 +19,22 @@ interface Message {
     createdAt: string
 }
 
+interface Contact {
+    id: string
+    name: string
+    phone: string
+}
+
 interface Conversation {
     id: string
     messages: Message[]
-    contactName?: string
-    contactPhone: string
+    contact: Contact
     updatedAt: string
 }
 
 export default function ConversationsPage() {
     const [conversations, setConversations] = useState<Conversation[]>([])
-    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
+    const [selectedConversation, setSelectedConversation] = useState<number>(-1)
     const { selectedAgent } = useAgent()
     const [dialPhone, setDialPhone] = useState<string>("")
     const [dialPhoneDialogOpen, setDialPhoneDialogOpen] = useState<boolean>(false)
@@ -40,10 +45,14 @@ export default function ConversationsPage() {
     }, [selectedAgent])
 
     const fetchConversations = async () => {
-        const response = await api.get(`/agents/${selectedAgent}/conversations`)
-        setConversations(response.data)
-        if (response.data.length > 0 && !selectedConversation) {
-            setSelectedConversation(response.data[0])
+        try {
+            const response = await api.get(`/agents/${selectedAgent}/conversations`)
+            setConversations(response.data)
+            if (response.data.length > 0 && !selectedConversation) {
+                setSelectedConversation(response.data[0])
+            }
+        } catch (err) {
+            console.log(err)
         }
     }
 
@@ -93,17 +102,17 @@ export default function ConversationsPage() {
                             </Dialog>
                         </div>
                         <div>
-                            {conversations.map((conversation) => (
+                            {conversations.map((conversation, index) => (
                                 <button
                                     key={conversation.id}
-                                    onClick={() => setSelectedConversation(conversation)}
+                                    onClick={() => setSelectedConversation(index)}
                                     className={cn(
                                         "w-full text-left p-3 hover:bg-muted transition-colors border-b border-zinc-200",
-                                        selectedConversation?.id === conversation.id && "bg-muted"
+                                        selectedConversation === index && "bg-muted"
                                     )}
                                 >
                                     <div className="font-medium">
-                                        {conversation.contactName || conversation.contactPhone}
+                                        {conversation.contact.name || conversation.contact.phone}
                                     </div>
                                     <div className="text-sm text-muted-foreground truncate">
                                         {conversation.messages[conversation.messages.length - 1]?.content || "No messages"}
@@ -125,19 +134,19 @@ export default function ConversationsPage() {
 
             {/* Conversation View */}
             <div className="flex-1 flex flex-col">
-                {selectedConversation ? (
+                {conversations[selectedConversation] ? (
                     <>
                         {/* Header */}
                         <div className="border-b p-4">
                             <h2 className="font-semibold">
-                                {selectedConversation.contactName || selectedConversation.contactPhone}
+                                {conversations[selectedConversation].contact.name || conversations[selectedConversation].contact.phone}
                             </h2>
                         </div>
 
                         {/* Messages */}
                         <ScrollArea className="flex-1 p-4">
                             <div className="space-y-4">
-                                {selectedConversation.messages.map((message) => (
+                                {conversations[selectedConversation].messages.map((message) => (
                                     <div
                                         key={message.id}
                                         className={cn(

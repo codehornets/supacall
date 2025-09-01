@@ -11,8 +11,6 @@ const createAgentSchema = {
   body: z.object({
     name: z.string().min(1, "Name is required"),
     description: z.string().min(1, "Description is required"),
-    allowWebsite: z.boolean().optional().default(true),
-    allowPhone: z.boolean().optional().default(false),
   }),
 };
 

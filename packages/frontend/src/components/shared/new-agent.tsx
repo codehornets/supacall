@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -15,9 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    description: z.string().min(1, "Description is required"),
-    allowWebsite: z.boolean(),
-    allowPhone: z.boolean(),
+    description: z.string().min(1, "Description is required")
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -25,8 +23,6 @@ type FormData = z.infer<typeof formSchema>
 const defaultValues: FormData = {
     name: "",
     description: "",
-    allowWebsite: true,
-    allowPhone: false,
 }
 
 export default function NewAgent() {
@@ -50,7 +46,7 @@ export default function NewAgent() {
 
     return (
         <>
-            <Button 
+            <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setOpen(true)}
@@ -93,56 +89,14 @@ export default function NewAgent() {
                                     </FormItem>
                                 )}
                             />
-                            <div className="flex flex-col gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="allowWebsite"
-                                    render={({ field }) => (
-                                        <FormItem className="flex items-center p-2 border border-zinc-200 rounded-md justify-between">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Allow Website</FormLabel>
-                                                <FormDescription>
-                                                    Enable website conversations
-                                                </FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="allowPhone"
-                                    render={({ field }) => (
-                                        <FormItem className="flex items-center p-2 border border-zinc-200 rounded-md justify-between">
-                                            <div className="space-y-0.5">
-                                                <FormLabel>Allow Phone</FormLabel>
-                                                <FormDescription>
-                                                    Enable phone conversations
-                                                </FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
+                            <DialogFooter>
                                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                                     Cancel
                                 </Button>
                                 <Button type="submit">
                                     Create Agent
                                 </Button>
-                            </div>
+                            </DialogFooter>
                         </form>
                     </Form>
                 </DialogContent>

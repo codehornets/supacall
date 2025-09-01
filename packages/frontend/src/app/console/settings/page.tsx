@@ -60,6 +60,7 @@ export default function SettingsPage() {
     }
 
     useEffect(() => {
+        if(!selectedAgent) return;
         fetchTwilioSettings();
     }, [selectedAgent]);
 

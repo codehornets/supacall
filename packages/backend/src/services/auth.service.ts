@@ -52,7 +52,7 @@ export class AuthService {
     });
 
     // Create organization and add user as admin
-    const organization = await prisma.organization.create({
+    await prisma.organization.create({
       data: {
         name: input.organizationName,
         members: {
@@ -144,6 +144,7 @@ export class AuthService {
     refreshTokenExpiry: string
   }> {
     const userId = await JwtService.verifyRefreshToken(token);
+    
     if (!userId) {
       throw new Error('Invalid refresh token');
     }

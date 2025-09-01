@@ -49,7 +49,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="w-screen h-screen flex">
             <div className="h-screen flex flex-col gap-3 pt-5 items-start px-3 w-[250px] border-r-[1px] border-zinc-200 flex-shrink-0">
-                <Image src="/logo-full.svg" className="mb-2" alt="Nico" width={150} height={75} />
+                <Image src="/logo-full.svg" className="mb-2 -mt-2" alt="Nico" width={100} height={55} />
                 <div className="w-full flex gap-2">
                     <Select value={selectedAgent || ""} onValueChange={setSelectedAgent}>
                         <SelectTrigger className="w-full">
