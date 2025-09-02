@@ -5,13 +5,14 @@ import { useAgent } from "@/hooks/use-agent"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api"
-import { PiPaperPlaneRight, PiPhoneCall } from "react-icons/pi"
+import { PiCircleFill, PiPaperPlaneRight, PiPhoneCall } from "react-icons/pi"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { startCase } from "lodash"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface Message {
     content: string
@@ -30,6 +31,7 @@ interface Conversation {
     messages: Message[]
     contact: Contact
     updatedAt: string
+    isLive: boolean
 }
 
 export default function ConversationsPage() {
@@ -111,7 +113,15 @@ export default function ConversationsPage() {
                                         selectedConversation === index && "bg-muted"
                                     )}
                                 >
-                                    <div className="font-medium">
+                                    <div className="font-medium flex items-center gap-2">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                {conversation.isLive && <PiCircleFill className="text-green-500 animate-pulse border-2 text-sm border-green-500 rounded-full" />}
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                {conversation.isLive ? "Live" : "Not Live"}
+                                            </TooltipContent>
+                                        </Tooltip>
                                         {conversation.contact.name || conversation.contact.phone}
                                     </div>
                                     <div className="text-sm text-muted-foreground truncate overflow-hidden max-w-[250px] text-ellipsis">
@@ -137,14 +147,28 @@ export default function ConversationsPage() {
                 {conversations[selectedConversation] ? (
                     <>
                         {/* Header */}
-                        <div className="border-b h-[50px] flex items-center px-4">
-                            <h2 className="font-semibold">
-                                {conversations[selectedConversation].contact.name || conversations[selectedConversation].contact.phone}
-                            </h2>
+                        <div className="border-b h-[50px] flex items-center justify-between px-4">
+                            <div className="flex items-center gap-2">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        {conversations[selectedConversation].isLive && <PiCircleFill className="text-green-500 animate-pulse text-sm border-2 border-green-500 rounded-full" />}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {conversations[selectedConversation].isLive ? "Live" : "Not Live"}
+                                    </TooltipContent>
+                                </Tooltip>
+                                <h2 className="font-semibold">
+                                    {conversations[selectedConversation].contact.name || conversations[selectedConversation].contact.phone}
+                                </h2>
+                            </div>
+                            <Button disabled={!conversations[selectedConversation].isLive} variant="outline">
+                                <PiPhoneCall />
+                                Dial In
+                            </Button>
                         </div>
 
                         {/* Messages */}
-                        <div className="h-[calc(100vh-150px)] p-5 space-y-4 overflow-y-auto overflow-x-hidden">
+                        <div className={`${conversations[selectedConversation].isLive ? "h-[calc(100vh-150px)]" : "h-[calc(100vh-50px)]"} p-5 space-y-4 overflow-y-auto overflow-x-hidden`}>
                             {conversations[selectedConversation].messages.map((message, index) => (
                                 <div key={`msg-${index}`}>
                                     <p className={cn(
@@ -171,12 +195,12 @@ export default function ConversationsPage() {
                         </div>
 
                         {/* Input */}
-                        <div className="h-[100px] border-t border-zinc-200 flex items-end justify-end p-3">
+                        {conversations[selectedConversation].isLive && <div className={`h-[100px] border-t border-zinc-200 flex items-end justify-end p-3`}>
                             <div className="h-full w-full">
                                 <textarea placeholder="Type a message" className="w-full resize-none outline-none" />
                             </div>
                             <Button size="icon"><PiPaperPlaneRight /></Button>
-                        </div>
+                        </div>}
                     </>
                 ) : (
                     <div className="h-full flex items-center justify-center text-muted-foreground">

@@ -1,7 +1,6 @@
-import Redis from "ioredis";
-import { REDIS_URL } from "../lib/constants";
 import { prisma } from "../lib/db";
 import { ContactsService } from "./contacts.service";
+import { redis } from "../lib/redis";
 
 export class ConversationsService {
     static async getConversations(agentId: string) {
@@ -11,13 +10,19 @@ export class ConversationsService {
                 contact: true
             }
         });
+
+        for (const conversation of conversations) {
+            const conversationRedis = await redis.get(`conversation:${conversation.id}`);
+            (conversation as any).isLive = conversationRedis ? true : false;
+        }
+
         return conversations;
     }
 
     static async createConversation(agentId: string, phone: string, organizationId: string) {
         let contact = await ContactsService.getContactByPhone(phone, agentId, organizationId)
 
-        if(!contact) {
+        if (!contact) {
             contact = await ContactsService.createContact(agentId, phone, organizationId)
         }
 
@@ -65,13 +70,11 @@ export class ConversationsService {
 
     static async sendHumanFeedback(conversationId: string, feedback: string) {
 
-        const redis = new Redis(REDIS_URL);
-
         const conversation = await prisma.conversation.findUnique({
             where: { id: conversationId }
         });
-        
-        if(!conversation) {
+
+        if (!conversation) {
             throw new Error('Conversation not found');
         }
 
@@ -92,7 +95,7 @@ export class ConversationsService {
 
         const conversationRedis = await redis.get(`conversation:${conversationId}`);
 
-        if(conversationRedis) {
+        if (conversationRedis) {
             const conversationRedisData = JSON.parse(conversationRedis);
             conversationRedisData.push({
                 type: "human_feedback",
@@ -100,7 +103,6 @@ export class ConversationsService {
                 timestamp: new Date().toISOString()
             });
             await redis.set(`conversation:${conversationId}`, JSON.stringify(conversationRedisData));
-            redis.disconnect();
         }
 
         return updatedConversation;

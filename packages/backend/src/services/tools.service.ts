@@ -31,9 +31,7 @@ export class ToolsService {
                 organizationId
             },
             data: { 
-                mcp: { 
-                    set: mcp 
-                } 
+                mcp: mcp
             }
         })
     }
@@ -47,7 +45,7 @@ export class ToolsService {
         mcp = mcp.filter((mcp) => mcp.endpoint !== endpoint);
         await prisma.agentTools.update({
             where: { agentId: agentId, organizationId },
-            data: { mcp: { set: mcp } }
+            data: { mcp: mcp }
         })
     }
 

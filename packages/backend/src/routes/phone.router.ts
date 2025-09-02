@@ -161,6 +161,8 @@ export function usePhoneCallRouter(app: Application) {
 
             conversationId = conversation.id
 
+            await redis.set(`conversation:${conversationId}`, JSON.stringify([]))
+
             await redis.psubscribe(`__keyspace@0__:conversation:${conversationId}`)
             redis.on("pmessage", async (pattern, channel, message) => {
                 const conversation = await redis.get(`conversation:${conversationId}`)
@@ -186,6 +188,7 @@ export function usePhoneCallRouter(app: Application) {
                     }
                 }
             })
+
         }
 
         const initializeOpenAI = () => {
@@ -493,12 +496,21 @@ export function usePhoneCallRouter(app: Application) {
             }
         });
 
-        ws.on('close', () => {
+        ws.on('close', async () => {
             console.log('Twilio WebSocket connection closed');
             // Clean up timers and OpenAI connection
-            if (redis) {
-                redis.disconnect()
+            if (conversationId) {
+                try {
+                    await redis.del(`conversation:${conversationId}`);
+                } catch (error) {
+                    console.error('Error deleting conversation:', error);
+                }
             }
+
+            if (redis) {
+                redis.disconnect();
+            }
+
             if (openaiWs) {
                 openaiWs.close();
                 openaiWs = null;
